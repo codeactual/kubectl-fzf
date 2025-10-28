@@ -6,14 +6,13 @@ import (
 	"path"
 	"testing"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/resources"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/util"
-	"github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/require"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/resources"
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
+	"github.com/codeactual/kubectl-fzf/v4/internal/util"
 )
 
 func TestMain(m *testing.M) {
-	logrus.SetLevel(logrus.DebugLevel)
+	log.SetLevel(log.DebugLevel)
 	code := m.Run()
 	os.Exit(code)
 }
@@ -31,13 +30,19 @@ func TestDumpAPIResources(t *testing.T) {
 
 	resource["v1"] = &list
 	tempDir, err := ioutil.TempDir("/tmp/", "cacheTest")
-	require.NoError(t, err)
+	if err != nil {
+		t.Fatalf("TempDir() error = %v", err)
+	}
 
 	apiResourcesFilePath := path.Join(tempDir, "apiresources")
 	err = util.EncodeToFile(resource, apiResourcesFilePath)
-	require.NoError(t, err)
+	if err != nil {
+		t.Fatalf("EncodeToFile() error = %v", err)
+	}
 
 	loadResource := map[string]resources.K8sResource{}
 	err = util.LoadGobFromFile(&loadResource, apiResourcesFilePath)
-	require.NoError(t, err)
+	if err != nil {
+		t.Fatalf("LoadGobFromFile() error = %v", err)
+	}
 }

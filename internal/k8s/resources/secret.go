@@ -3,8 +3,8 @@ package resources
 import (
 	"strconv"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/util"
-	"github.com/sirupsen/logrus"
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
+	"github.com/codeactual/kubectl-fzf/v4/internal/util"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -25,7 +25,7 @@ func NewSecretFromRuntime(obj interface{}, config CtorConfig) K8sResource {
 // FromRuntime builds object from the informer's result
 func (s *Secret) FromRuntime(obj interface{}, config CtorConfig) {
 	secret := obj.(*corev1.Secret)
-	logrus.Tracef("Reading meta %#v", secret)
+	log.Tracef("Reading meta %#v", secret)
 	s.FromObjectMeta(secret.ObjectMeta, config)
 	s.SecretType = string(secret.Type)
 	s.Data = strconv.Itoa(len(secret.Data))

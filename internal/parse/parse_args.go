@@ -3,8 +3,8 @@ package parse
 import (
 	"strings"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/resources"
-	"github.com/sirupsen/logrus"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/resources"
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
 )
 
 type UnmanagedFlagError string
@@ -17,11 +17,11 @@ func ParseFlagAndResources(cmdVerb string, cmdArgs []string) (resourceType resou
 	resourceType = resources.ResourceTypeUnknown
 	flagCompletion = CheckFlagManaged(cmdArgs)
 	if flagCompletion == FlagUnmanaged {
-		logrus.Infof("Flag is unmanaged in %s, bailing out", cmdArgs)
+		log.Infof("Flag is unmanaged in %s, bailing out", cmdArgs)
 		err = UnmanagedFlagError(strings.Join(cmdArgs, " "))
 		return
 	}
-	logrus.Infof("Flag parsed: %s", flagCompletion.String())
+	log.Infof("Flag parsed: %s", flagCompletion.String())
 
 	if flagCompletion == FlagNamespace {
 		resourceType = resources.ResourceTypeNamespace

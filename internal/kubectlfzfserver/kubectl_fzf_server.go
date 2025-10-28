@@ -10,12 +10,13 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/httpserver"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/resourcewatcher"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/store"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/util"
+	"github.com/codeactual/kubectl-fzf/v4/internal/httpserver"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/resourcewatcher"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/store"
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
+	"github.com/codeactual/kubectl-fzf/v4/internal/util"
+	configstore "github.com/codeactual/kubectl-fzf/v4/internal/util/config"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 )
 
 func startWatchOnCluster(ctx context.Context,
@@ -34,7 +35,7 @@ func startWatchOnCluster(ctx context.Context,
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "error getting watchdog configs")
 	}
-	logrus.Infof("Start cache build on cluster %s", cluster)
+	log.Infof("Start cache build on cluster %s", cluster)
 	stores := make([]*store.Store, 0)
 	for _, watchConfig := range watchConfigs {
 		store := watcher.Start(ctx, watchConfig)
@@ -53,59 +54,59 @@ func handleSignals(cancel context.CancelFunc) {
 	for sig := range sigIn {
 		switch sig {
 		case syscall.SIGINT, syscall.SIGTERM:
-			logrus.Errorf("Caught signal '%s' (%d); terminating.", sig, sig)
+			log.Errorf("Caught signal '%s' (%d); terminating.", sig, sig)
 			cancel()
 		}
 	}
 }
 
-func StartKubectlFzfServer() {
+func StartKubectlFzfServer(cfg *configstore.Store) {
 	ctx, cancel := context.WithCancel(context.Background())
 	go handleSignals(cancel)
 
-	storeConfigCli := store.GetStoreConfigCli()
+	storeConfigCli := store.NewStoreConfigCli(cfg)
 	storeConfig := store.NewStoreConfig(&storeConfigCli)
 	err := storeConfig.LoadClusterConfig()
 	if err != nil {
-		logrus.Fatal("Couldn't get current context: ", err)
+		log.Fatal("Couldn't get current context: ", err)
 	}
 	err = storeConfig.CreateDestDir()
 	if err != nil {
-		logrus.Fatalf("error creating destination dir: %s", err)
+		log.Fatalf("error creating destination dir: %s", err)
 	}
 
-	resourceWatcherCli := resourcewatcher.GetResourceWatcherCli()
+	resourceWatcherCli := resourcewatcher.NewResourceWatcherCli(cfg)
 	watcher, stores, err := startWatchOnCluster(ctx, resourceWatcherCli, storeConfig)
 	util.FatalIf(err)
 	ticker := time.NewTicker(time.Second * 5)
 
-	httpServerConfCli := httpserver.GetHttpServerConfigCli()
+	httpServerConfCli := httpserver.NewHttpServerConfigCli(cfg)
 	_, err = httpserver.StartHttpServer(ctx, &httpServerConfCli, storeConfig, stores)
 	if err != nil {
-		logrus.Fatalf("Error starting http server: %s", err)
+		log.Fatalf("Error starting http server: %s", err)
 	}
 
 	go func() {
-		logrus.Println(http.ListenAndServe("localhost:6060", nil))
+		log.Println(http.ListenAndServe("localhost:6060", nil))
 	}()
 
 	currentContext := storeConfig.GetContext()
 	for {
 		select {
 		case <-ctx.Done():
-			logrus.Info("Context done, exiting")
+			log.Info("Context done, exiting")
 			return
 		case <-ticker.C:
 			err = storeConfig.LoadClusterConfig()
 			util.FatalIf(err)
 			newContext := storeConfig.GetContext()
-			logrus.Debugf("Checking config %s %s ", currentContext, newContext)
+			log.Debugf("Checking config %s %s ", currentContext, newContext)
 			if newContext != currentContext {
-				logrus.Infof("Detected context change %s != %s", newContext, currentContext)
+				log.Infof("Detected context change %s != %s", newContext, currentContext)
 				watcher.Stop()
 				err = storeConfig.CreateDestDir()
 				if err != nil {
-					logrus.Fatalf("error creating destination dir: %s", err)
+					log.Fatalf("error creating destination dir: %s", err)
 				}
 				watcher, _, err = startWatchOnCluster(ctx, resourceWatcherCli, storeConfig)
 				util.FatalIf(err)

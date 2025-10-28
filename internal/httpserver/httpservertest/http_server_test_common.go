@@ -4,11 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/httpserver"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/clusterconfig"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/store"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/store/storetest"
-	"github.com/stretchr/testify/require"
+	"github.com/codeactual/kubectl-fzf/v4/internal/httpserver"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/clusterconfig"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/store"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/store/storetest"
 )
 
 func GetTestClusterConfigCli() *clusterconfig.ClusterConfigCli {
@@ -26,6 +25,8 @@ func StartTestHttpServer(t *testing.T) *httpserver.FzfHttpServer {
 	_, podStore := storetest.GetTestPodStore(t)
 	h := &httpserver.HttpServerConfigCli{ListenAddress: "localhost:0", Debug: false}
 	fzfHttpServer, err := httpserver.StartHttpServer(ctx, h, storeConfig, []*store.Store{podStore})
-	require.NoError(t, err)
+	if err != nil {
+		t.Fatalf("StartHttpServer() error = %v", err)
+	}
 	return fzfHttpServer
 }

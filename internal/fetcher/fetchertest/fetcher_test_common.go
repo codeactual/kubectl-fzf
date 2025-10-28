@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/fetcher"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/clusterconfig"
+	"github.com/codeactual/kubectl-fzf/v4/internal/fetcher"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/clusterconfig"
 )
 
 func GetTestFetcher(t *testing.T, clusterName string, port int) (*fetcher.Fetcher, string) {

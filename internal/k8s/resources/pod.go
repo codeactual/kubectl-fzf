@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/util"
-	"github.com/sirupsen/logrus"
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
+	"github.com/codeactual/kubectl-fzf/v4/internal/util"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -61,7 +61,7 @@ func NewPodFromRuntime(obj interface{}, config CtorConfig) K8sResource {
 // FromRuntime builds object from the informer's result
 func (p *Pod) FromRuntime(obj interface{}, config CtorConfig) {
 	pod := obj.(*corev1.Pod)
-	logrus.Tracef("Reading meta %#v", pod)
+	log.Tracef("Reading meta %#v", pod)
 	p.FromObjectMeta(pod.ObjectMeta, config)
 	p.HostIP = pod.Status.HostIP
 	p.PodIP = pod.Status.PodIP

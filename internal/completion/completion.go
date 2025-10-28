@@ -6,12 +6,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/fetcher"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/resources"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/parse"
+	"github.com/codeactual/kubectl-fzf/v4/internal/fetcher"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/resources"
+	"github.com/codeactual/kubectl-fzf/v4/internal/parse"
 
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 )
 
 func PrepareCmdArgs(cmdArgs []string) []string {
@@ -34,7 +34,7 @@ func getResourceCompletion(ctx context.Context, r resources.ResourceType, namesp
 		return nil, err
 	}
 	comps := []string{}
-	logrus.Debugf("Filterting with namespace %v", namespace)
+	log.Debugf("Filterting with namespace %v", namespace)
 	for _, resource := range resources {
 		if namespace == nil || *namespace == resource.GetNamespace() {
 			comps = append(comps, resource.ToStrings()...)
@@ -61,7 +61,7 @@ func processCommandArgsWithFetchConfig(ctx context.Context, fetchConfig *fetcher
 	if err != nil {
 		return nil, err
 	}
-	logrus.Debugf("Call Get Fun with %+v, resource type detected %s, flag detected %s", args, resourceType, flagCompletion)
+	log.Debugf("Call Get Fun with %+v, resource type detected %s, flag detected %s", args, resourceType, flagCompletion)
 
 	completionResult := &CompletionResult{Cluster: fetchConfig.GetContext()}
 	namespace := parse.ParseNamespaceFromArgs(args)

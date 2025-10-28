@@ -4,21 +4,20 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/fetcher"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/resources"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/parse"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/util"
+	"github.com/codeactual/kubectl-fzf/v4/internal/fetcher"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/resources"
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
+	"github.com/codeactual/kubectl-fzf/v4/internal/parse"
+	"github.com/codeactual/kubectl-fzf/v4/internal/util"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/pflag"
 )
 
 // ProcessResult handles fzf output and provides completion to use
 // The fzfResult should have the first 3 columns of the fzf preview
 func ProcessResult(cmdUse string, cmdArgs []string,
 	f *fetcher.Fetcher, fzfResult string) (string, error) {
-	logrus.Debugf("Processing fzf result %s", fzfResult)
-	logrus.Debugf("Cmd command %s", cmdArgs)
+	log.Debugf("Processing fzf result %s", fzfResult)
+	log.Debugf("Cmd command %s", cmdArgs)
 	namespace, err := f.GetNamespace()
 	if err != nil {
 		return "", err
@@ -27,12 +26,33 @@ func ProcessResult(cmdUse string, cmdArgs []string,
 }
 
 func parseNamespaceFlag(cmdArgs []string) (*string, error) {
-	fs := pflag.NewFlagSet("f1", pflag.ContinueOnError)
-	fs.ParseErrorsWhitelist.UnknownFlags = true
-	cmdNamespace := fs.StringP("namespace", "n", "", "")
-	logrus.Debugf("Parsing namespace from %v", cmdArgs)
-	err := fs.Parse(cmdArgs)
-	return cmdNamespace, err
+	log.Debugf("Parsing namespace from %v", cmdArgs)
+	var namespace *string
+	for i := 0; i < len(cmdArgs); i++ {
+		arg := cmdArgs[i]
+		if arg == "--" {
+			break
+		}
+		switch {
+		case arg == "-n" || arg == "--namespace":
+			if i+1 >= len(cmdArgs) {
+				return nil, fmt.Errorf("flag needs an argument: %s", arg)
+			}
+			value := cmdArgs[i+1]
+			namespace = &value
+			i++
+		case strings.HasPrefix(arg, "-n="):
+			value := strings.TrimPrefix(arg, "-n=")
+			namespace = &value
+		case strings.HasPrefix(arg, "--namespace="):
+			value := strings.TrimPrefix(arg, "--namespace=")
+			namespace = &value
+		case strings.HasPrefix(arg, "-n") && len(arg) > 2:
+			value := arg[2:]
+			namespace = &value
+		}
+	}
+	return namespace, nil
 }
 
 func processResultWithNamespace(cmdUse string, cmdArgs []string, fzfResult string, currentNamespace string) (string, error) {
@@ -46,12 +66,12 @@ func processResultWithNamespace(cmdUse string, cmdArgs []string, fzfResult strin
 	if len(resultFields) < 2 {
 		return "", fmt.Errorf("fzf result should have at least 3 elements, got %v", resultFields)
 	}
-	logrus.Debugf("Processing fzfResult '%s', cmdArgs '%s', current namespace '%s'", fzfResult, cmdArgs, currentNamespace)
+	log.Debugf("Processing fzfResult '%s', cmdArgs '%s', current namespace '%s'", fzfResult, cmdArgs, currentNamespace)
 	resourceType, flagCompletion, err := parse.ParseFlagAndResources(cmdUse, cmdArgs)
 	if err != nil {
 		return "", err
 	}
-	logrus.Debugf("Resource type %s, flagCompletion %s", resourceType, flagCompletion)
+	log.Debugf("Resource type %s, flagCompletion %s", resourceType, flagCompletion)
 
 	if resourceType == resources.ResourceTypeApiResource {
 		return resultFields[0], nil
@@ -69,7 +89,7 @@ func processResultWithNamespace(cmdUse string, cmdArgs []string, fzfResult strin
 		resultValue = resultFields[0]
 	}
 
-	logrus.Debugf("Result namespace: %s, resultValue: %s", resultNamespace, resultValue)
+	log.Debugf("Result namespace: %s, resultValue: %s", resultNamespace, resultValue)
 
 	var cmdNamespace *string
 	if flagCompletion != parse.FlagNamespace {
@@ -77,7 +97,7 @@ func processResultWithNamespace(cmdUse string, cmdArgs []string, fzfResult strin
 		if err != nil {
 			return "", errors.Wrapf(err, "Error parsing commands %s", cmdArgs)
 		}
-		logrus.Debugf("Namespace parsed: %s", *cmdNamespace)
+		log.Debugf("Namespace parsed: %s", *cmdNamespace)
 	}
 	lastWord := cmdArgs[len(cmdArgs)-1]
 	// add flag to the completion

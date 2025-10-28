@@ -3,7 +3,7 @@ package resources
 import (
 	"fmt"
 
-	"github.com/sirupsen/logrus"
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
 )
 
 type UnknownResourceError struct {
@@ -250,7 +250,7 @@ func GetResourceSetFromSlice(resourceSlice []string) (map[ResourceType]bool, err
 }
 
 func GetResourceType(cmdUse string, args []string) ResourceType {
-	logrus.Debugf("Getting resource type from %s, '%s', %d", cmdUse, args, len(args))
+	log.Debugf("Getting resource type from %s, '%s', %d", cmdUse, args, len(args))
 	resourceType := ResourceTypeApiResource
 	if cmdUse == "logs" {
 		return ResourceTypePod

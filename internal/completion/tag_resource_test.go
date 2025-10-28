@@ -4,61 +4,94 @@ import (
 	"context"
 	"testing"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/fetcher/fetchertest"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/resources"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/codeactual/kubectl-fzf/v4/internal/fetcher/fetchertest"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/resources"
 )
 
 func TestTagLabel(t *testing.T) {
 	fetchConfig := fetchertest.GetTestFetcherWithDefaults(t)
 	labelMap, err := getTagResourceOccurrences(context.Background(), resources.ResourceTypePod, nil, fetchConfig, TagTypeLabel)
-	assert.NoError(t, err)
+	if err != nil {
+		t.Fatalf("getTagResourceOccurrences() error = %v", err)
+	}
 	t.Log(labelMap)
 
-	assert.Contains(t, labelMap, TagResourceKey{"kube-system", "k8s-app=kube-dns"})
-	assert.Contains(t, labelMap, TagResourceKey{"kube-system", "tier=control-plane"})
-	assert.Equal(t, 4, labelMap[TagResourceKey{"kube-system", "tier=control-plane"}])
+	if _, ok := labelMap[TagResourceKey{"kube-system", "k8s-app=kube-dns"}]; !ok {
+		t.Fatalf("expected kube-dns label to be present")
+	}
+	if count, ok := labelMap[TagResourceKey{"kube-system", "tier=control-plane"}]; !ok {
+		t.Fatalf("expected control-plane label to be present")
+	} else if count != 4 {
+		t.Fatalf("expected control-plane label count to be 4, got %d", count)
+	}
 }
 
 func TestLabelNamespaceFiltering(t *testing.T) {
 	fetchConfig := fetchertest.GetTestFetcherWithDefaults(t)
 	namespace := "default"
 	labelMap, err := getTagResourceOccurrences(context.Background(), resources.ResourceTypePod, &namespace, fetchConfig, TagTypeLabel)
-	assert.NoError(t, err)
-	assert.Len(t, labelMap, 0)
+	if err != nil {
+		t.Fatalf("getTagResourceOccurrences() error = %v", err)
+	}
+	if len(labelMap) != 0 {
+		t.Fatalf("expected no labels for namespace %q, got %d", namespace, len(labelMap))
+	}
 }
 
 func TestLabelCompletionPod(t *testing.T) {
 	fetchConfig := fetchertest.GetTestFetcherWithDefaults(t)
 	labelHeader, labelComps, err := GetTagResourceCompletion(context.Background(), resources.ResourceTypePod, nil, fetchConfig, TagTypeLabel)
-	assert.NoError(t, err)
-	assert.Len(t, labelComps, 12)
+	if err != nil {
+		t.Fatalf("GetTagResourceCompletion() error = %v", err)
+	}
+	if len(labelComps) != 12 {
+		t.Fatalf("expected 12 label completions, got %d", len(labelComps))
+	}
 
 	t.Log(labelComps)
-	assert.Equal(t, "Namespace\tLabel\tOccurrences", labelHeader)
-	assert.Equal(t, "kube-system\ttier=control-plane\t4", labelComps[0])
-	assert.Equal(t, "kube-system\taddonmanager.kubernetes.io/mode=Reconcile\t1", labelComps[1])
+	if labelHeader != "Namespace\tLabel\tOccurrences" {
+		t.Fatalf("unexpected label header: %s", labelHeader)
+	}
+	if labelComps[0] != "kube-system\ttier=control-plane\t4" {
+		t.Fatalf("unexpected first label completion: %s", labelComps[0])
+	}
+	if labelComps[1] != "kube-system\taddonmanager.kubernetes.io/mode=Reconcile\t1" {
+		t.Fatalf("unexpected second label completion: %s", labelComps[1])
+	}
 }
 
 func TestLabelCompletionNode(t *testing.T) {
 	fetchConfig := fetchertest.GetTestFetcherWithDefaults(t)
 	labelHeader, labelComps, err := GetTagResourceCompletion(context.Background(), resources.ResourceTypeNode, nil, fetchConfig, TagTypeLabel)
-	assert.NoError(t, err)
-	assert.Len(t, labelComps, 12)
+	if err != nil {
+		t.Fatalf("GetTagResourceCompletion() error = %v", err)
+	}
+	if len(labelComps) != 12 {
+		t.Fatalf("expected 12 label completions, got %d", len(labelComps))
+	}
 
 	t.Log(labelComps)
-	assert.Equal(t, "Label\tOccurrences", labelHeader)
-	assert.Equal(t, "beta.kubernetes.io/arch=amd64\t1", labelComps[0])
-	assert.Equal(t, "beta.kubernetes.io/os=linux\t1", labelComps[1])
+	if labelHeader != "Label\tOccurrences" {
+		t.Fatalf("unexpected label header: %s", labelHeader)
+	}
+	if labelComps[0] != "beta.kubernetes.io/arch=amd64\t1" {
+		t.Fatalf("unexpected first label completion: %s", labelComps[0])
+	}
+	if labelComps[1] != "beta.kubernetes.io/os=linux\t1" {
+		t.Fatalf("unexpected second label completion: %s", labelComps[1])
+	}
 }
 
 func TestGetFieldSelector(t *testing.T) {
 	fetchConfig := fetchertest.GetTestFetcherWithDefaults(t)
 	fieldSelectorOccurrences, err := getTagResourceOccurrences(context.Background(), resources.ResourceTypePod, nil, fetchConfig, TagTypeFieldSelector)
-	require.NoError(t, err)
+	if err != nil {
+		t.Fatalf("getTagResourceOccurrences() error = %v", err)
+	}
 
-	assert.Contains(t, fieldSelectorOccurrences, TagResourceKey{"kube-system", "spec.nodeName=minikube"})
-	assert.Equal(t, 7, fieldSelectorOccurrences[TagResourceKey{"kube-system", "spec.nodeName=minikube"}])
+	if count, ok := fieldSelectorOccurrences[TagResourceKey{"kube-system", "spec.nodeName=minikube"}]; !ok {
+		t.Fatalf("expected field selector occurrence to be present")
+	} else if count != 7 {
+		t.Fatalf("expected field selector count to be 7, got %d", count)
+	}
 }

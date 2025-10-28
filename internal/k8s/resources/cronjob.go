@@ -3,8 +3,8 @@ package resources
 import (
 	"strings"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/util"
-	"github.com/sirupsen/logrus"
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
+	"github.com/codeactual/kubectl-fzf/v4/internal/util"
 	v1 "k8s.io/api/batch/v1"
 )
 
@@ -26,7 +26,7 @@ func NewCronJobFromRuntime(obj interface{}, config CtorConfig) K8sResource {
 // FromRuntime builds object from the informer's result
 func (c *CronJob) FromRuntime(obj interface{}, config CtorConfig) {
 	cronJob := obj.(*v1.CronJob)
-	logrus.Tracef("Reading meta %#v", cronJob)
+	log.Tracef("Reading meta %#v", cronJob)
 	c.FromObjectMeta(cronJob.ObjectMeta, config)
 	c.Schedule = strings.ReplaceAll(cronJob.Spec.Schedule, " ", "_")
 	c.LastSchedule = ""

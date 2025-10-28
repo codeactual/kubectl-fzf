@@ -5,14 +5,12 @@ import (
 	"os"
 	"testing"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/fetcher/fetchertest"
-	"github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/codeactual/kubectl-fzf/v4/internal/fetcher/fetchertest"
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
 )
 
 func TestMain(m *testing.M) {
-	logrus.SetLevel(logrus.DebugLevel)
+	log.SetLevel(log.DebugLevel)
 	code := m.Run()
 	os.Exit(code)
 }
@@ -22,6 +20,10 @@ func TestHttpServerApiCompletion(t *testing.T) {
 	f, _ := fetchertest.GetTestFetcher(t, "nothing", fzfHttpServer.Port)
 	ctx := context.Background()
 	s, err := f.GetStats(ctx)
-	require.NoError(t, err)
-	assert.Len(t, s, 1)
+	if err != nil {
+		t.Fatalf("GetStats() error = %v", err)
+	}
+	if len(s) != 1 {
+		t.Fatalf("expected 1 stat, got %d", len(s))
+	}
 }

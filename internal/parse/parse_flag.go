@@ -3,7 +3,7 @@ package parse
 import (
 	"strings"
 
-	"github.com/sirupsen/logrus"
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
 )
 
 type FlagCompletion int
@@ -25,7 +25,7 @@ func (f FlagCompletion) String() string {
 }
 
 func parsePreviousFlag(s string) FlagCompletion {
-	logrus.Debugf("Parsing previous flag '%s'", s)
+	log.Debugf("Parsing previous flag '%s'", s)
 	switch s {
 	case "-l":
 		return FlagLabel
@@ -51,7 +51,7 @@ func parsePreviousFlag(s string) FlagCompletion {
 }
 
 func parseLastFlag(s string) FlagCompletion {
-	logrus.Debugf("Parsing last flag '%s'", s)
+	log.Debugf("Parsing last flag '%s'", s)
 	switch s {
 	case "-l":
 		fallthrough
@@ -72,7 +72,7 @@ func parseLastFlag(s string) FlagCompletion {
 }
 
 func CheckFlagManaged(args []string) FlagCompletion {
-	logrus.Infof("Checking Managed Flag '%s'", args)
+	log.Infof("Checking Managed Flag '%s'", args)
 	if len(args) == 0 {
 		return FlagNone
 	}

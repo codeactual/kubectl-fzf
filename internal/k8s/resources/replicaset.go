@@ -3,7 +3,7 @@ package resources
 import (
 	"strconv"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/util"
+	"github.com/codeactual/kubectl-fzf/v4/internal/util"
 	appsv1 "k8s.io/api/apps/v1"
 )
 

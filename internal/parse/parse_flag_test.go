@@ -1,10 +1,6 @@
 package parse
 
-import (
-	"testing"
-
-	"github.com/stretchr/testify/require"
-)
+import "testing"
 
 func TestUnmanagedArgs(t *testing.T) {
 	cmdArgs := [][]string{
@@ -15,7 +11,9 @@ func TestUnmanagedArgs(t *testing.T) {
 	}
 	for _, args := range cmdArgs {
 		r := CheckFlagManaged(args)
-		require.Equal(t, FlagUnmanaged.String(), r.String())
+		if r.String() != FlagUnmanaged.String() {
+			t.Errorf("CheckFlagManaged(%q) = %s, want %s", args, r.String(), FlagUnmanaged.String())
+		}
 	}
 }
 
@@ -41,6 +39,8 @@ func TestManagedArgs(t *testing.T) {
 	}
 	for _, args := range cmdArgs {
 		r := CheckFlagManaged(args.flag)
-		require.Equal(t, args.result.String(), r.String())
+		if r.String() != args.result.String() {
+			t.Errorf("CheckFlagManaged(%q) = %s, want %s", args.flag, r.String(), args.result.String())
+		}
 	}
 }

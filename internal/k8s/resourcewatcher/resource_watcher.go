@@ -5,11 +5,11 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/resources"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/store"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/util"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/resources"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/store"
+	"github.com/codeactual/kubectl-fzf/v4/internal/util"
 
-	"github.com/sirupsen/logrus"
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	batchv1 "k8s.io/api/batch/v1"
@@ -101,7 +101,7 @@ func (r *ResourceWatcher) Start(parentCtx context.Context, cfg WatchConfig) *sto
 
 // Stop closes the watch/poll process of a k8s resource
 func (r *ResourceWatcher) Stop() {
-	logrus.Infof("Stopping %d resource watcher", len(r.cancelFuncs))
+	log.Infof("Stopping %d resource watcher", len(r.cancelFuncs))
 	for _, cancel := range r.cancelFuncs {
 		cancel()
 	}
@@ -155,11 +155,11 @@ func (r *ResourceWatcher) GetWatchConfigs() ([]WatchConfig, error) {
 func (r *ResourceWatcher) doPoll(cacheListWatch *cache.ListWatch, store *store.Store) {
 	obj, err := cacheListWatch.List(metav1.ListOptions{})
 	if err != nil {
-		logrus.Warningf("Error on listing resource: %v", err)
+		log.Warnf("Error on listing resource: %v", err)
 	}
 	lst, err := apimeta.ExtractList(obj)
 	if err != nil {
-		logrus.Warningf("Error extracting list: %v", err)
+		log.Warnf("Error extracting list: %v", err)
 	}
 	store.AddResourceList(lst)
 }
@@ -182,22 +182,22 @@ func (r *ResourceWatcher) FetchNamespaces(ctx context.Context) error {
 		for _, watchNamespace := range r.watchNamespaces {
 			r.namespaces = append(r.namespaces, watchNamespace.String())
 		}
-		logrus.Warnf("Failed to get the list of namespaces, will fallback to %s", r.namespaces)
+		log.Warnf("Failed to get the list of namespaces, will fallback to %s", r.namespaces)
 		return nil
 	}
 	for _, namespace := range namespaces.Items {
 		namespaceName := namespace.GetName()
 		if util.IsStringMatching(namespaceName, r.excludeNamespaces) {
-			logrus.Infof("namespace %s is in excluded namespaces, excluding", namespaceName)
+			log.Infof("namespace %s is in excluded namespaces, excluding", namespaceName)
 			continue
 		}
 		if len(r.watchNamespaces) > 0 && !util.IsStringMatching(namespaceName, r.watchNamespaces) {
-			logrus.Infof("namespace %s not in watched namespace, excluding", namespaceName)
+			log.Infof("namespace %s not in watched namespace, excluding", namespaceName)
 			continue
 		}
 		r.namespaces = append(r.namespaces, namespaceName)
 	}
-	logrus.Infof("Fetched %d namespaces", len(r.namespaces))
+	log.Infof("Fetched %d namespaces", len(r.namespaces))
 	return nil
 }
 
@@ -234,14 +234,14 @@ func (r *ResourceWatcher) getCacheListWatch(cfg WatchConfig, store *store.Store,
 
 func (r *ResourceWatcher) pollResource(ctx context.Context,
 	cfg WatchConfig, store *store.Store) {
-	logrus.Infof("Start poller for %s", cfg.resourceType)
+	log.Infof("Start poller for %s", cfg.resourceType)
 	cacheListWatch := r.getCacheListWatch(cfg, store, "")
 	r.doPoll(cacheListWatch, store)
 	ticker := time.NewTicker(cfg.pollingPeriod)
 	for {
 		select {
 		case <-ctx.Done():
-			logrus.Infof("Exiting poll of %s", cfg.resourceType)
+			log.Infof("Exiting poll of %s", cfg.resourceType)
 			return
 		case <-ticker.C:
 			r.doPoll(cacheListWatch, store)
@@ -266,11 +266,11 @@ func (r *ResourceWatcher) startWatch(cfg WatchConfig,
 	controller.AddEventHandler(resourceHandlers)
 	watchErrorHandler := func(reflector *cache.Reflector, err error) {
 		if errors.IsUnauthorized(err) && r.exitOnUnauthorized {
-			logrus.Warnf("Resource %s is unauthorized, stopping watcher", cfg.resourceType)
+			log.Warnf("Resource %s is unauthorized, stopping watcher", cfg.resourceType)
 			r.Stop()
 		}
 		if errors.IsForbidden(err) {
-			logrus.Warnf("Resource %s is forbidden, stopping watcher. err: %s", cfg.resourceType, err)
+			log.Warnf("Resource %s is forbidden, stopping watcher. err: %s", cfg.resourceType, err)
 			close(stop)
 		}
 	}
@@ -284,18 +284,18 @@ func (r *ResourceWatcher) watchResource(ctx context.Context,
 	resourceType := cfg.resourceType
 	isNamespaced := resourceType.IsNamespaced()
 	if !isNamespaced {
-		logrus.Infof("Resource %s is not Namespaced, will ignore namespace filters", resourceType)
+		log.Infof("Resource %s is not Namespaced, will ignore namespace filters", resourceType)
 	}
 	if isNamespaced && len(namespaces) > 0 {
-		logrus.Infof("Start watch for %s on namespace %s", resourceType, namespaces)
+		log.Infof("Start watch for %s on namespace %s", resourceType, namespaces)
 		for _, ns := range namespaces {
 			go r.startWatch(cfg, store, ns, stop)
 		}
 	} else {
-		logrus.Infof("Start watch for %s on all namespaces", resourceType)
+		log.Infof("Start watch for %s on all namespaces", resourceType)
 		go r.startWatch(cfg, store, "", stop)
 	}
 	<-ctx.Done()
-	logrus.Infof("Exiting watch of %s namespace %s", resourceType, namespaces)
+	log.Infof("Exiting watch of %s namespace %s", resourceType, namespaces)
 	close(stop)
 }

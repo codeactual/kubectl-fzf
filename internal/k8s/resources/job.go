@@ -3,9 +3,9 @@ package resources
 import (
 	"fmt"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/util"
+	"github.com/codeactual/kubectl-fzf/v4/internal/util"
 
-	"github.com/sirupsen/logrus"
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
 	batchv1 "k8s.io/api/batch/v1"
 )
 
@@ -26,7 +26,7 @@ func NewJobFromRuntime(obj interface{}, config CtorConfig) K8sResource {
 // FromRuntime builds object from the informer's result
 func (j *Job) FromRuntime(obj interface{}, config CtorConfig) {
 	job := obj.(*batchv1.Job)
-	logrus.Tracef("Reading meta %#v", job)
+	log.Tracef("Reading meta %#v", job)
 	j.FromObjectMeta(job.ObjectMeta, config)
 
 	j.Completions = "-"

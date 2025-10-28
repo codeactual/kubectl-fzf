@@ -1,11 +1,11 @@
 package store
 
 import (
+	"flag"
 	"time"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/clusterconfig"
-	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/clusterconfig"
+	"github.com/codeactual/kubectl-fzf/v4/internal/util/config"
 )
 
 type StoreConfigCli struct {
@@ -13,15 +13,14 @@ type StoreConfigCli struct {
 	TimeBetweenFullDump time.Duration
 }
 
-func SetStoreConfigCli(fs *pflag.FlagSet) {
+func SetStoreConfigCli(fs *flag.FlagSet) {
 	clusterconfig.SetClusterConfigCli(fs)
 	fs.Duration("time-between-full-dump", 10*time.Second, "Buffer changes and only do full dump every x secondes")
 }
 
-func GetStoreConfigCli() StoreConfigCli {
-	s := StoreConfigCli{
-		ClusterConfigCli: clusterconfig.GetClusterConfigCli(),
+func NewStoreConfigCli(store *config.Store) StoreConfigCli {
+	return StoreConfigCli{
+		ClusterConfigCli:    clusterconfig.NewClusterConfigCli(store),
+		TimeBetweenFullDump: store.GetDuration("time-between-full-dump", 10*time.Second),
 	}
-	s.TimeBetweenFullDump = viper.GetDuration("time-between-full-dump")
-	return s
 }

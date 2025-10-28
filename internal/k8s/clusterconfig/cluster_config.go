@@ -5,10 +5,10 @@ import (
 	"os"
 	"path"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/resources"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/util"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/resources"
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
+	"github.com/codeactual/kubectl-fzf/v4/internal/util"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -39,11 +39,11 @@ func (c *ClusterConfig) LoadClusterConfig() (err error) {
 	}
 	c.clusterName = c.apiConfig.CurrentContext
 	if c.clusterName == "" {
-		logrus.Infof("Couldn't read kubeconfig file, assuming incluster")
+		log.Infof("Couldn't read kubeconfig file, assuming incluster")
 		c.clusterName = "incluster"
 	}
 	c.destDir = path.Join(c.cacheDir, c.clusterName)
-	logrus.Debugf("Cluster config set to target '%s'", c.destDir)
+	log.Debugf("Cluster config set to target '%s'", c.destDir)
 	return nil
 }
 
@@ -51,7 +51,7 @@ func (c *ClusterConfig) CreateDestDir() error {
 	if c.clusterName == "" {
 		return errors.New("clustername is empty, call LoadClusterConfig before")
 	}
-	logrus.Infof("Creating destination dir '%s'", c.destDir)
+	log.Infof("Creating destination dir '%s'", c.destDir)
 	err := os.MkdirAll(c.destDir, os.ModePerm)
 	return err
 }

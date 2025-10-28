@@ -2,26 +2,29 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"os"
 	"runtime/pprof"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/completion"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/fetcher"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/fzf"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/gencode"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/clusterconfig"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/resources"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/store"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/parse"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/results"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/util"
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"github.com/codeactual/kubectl-fzf/v4/internal/completion"
+	"github.com/codeactual/kubectl-fzf/v4/internal/fetcher"
+	"github.com/codeactual/kubectl-fzf/v4/internal/fzf"
+	"github.com/codeactual/kubectl-fzf/v4/internal/gencode"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/clusterconfig"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/resources"
+	storepkg "github.com/codeactual/kubectl-fzf/v4/internal/k8s/store"
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
+	"github.com/codeactual/kubectl-fzf/v4/internal/parse"
+	"github.com/codeactual/kubectl-fzf/v4/internal/results"
+	"github.com/codeactual/kubectl-fzf/v4/internal/util"
+	configstore "github.com/codeactual/kubectl-fzf/v4/internal/util/config"
 )
 
-const FallbackExitCode = 6
+const (
+	FallbackExitCode = 6
+	configFileName   = ".kubectl_fzf.json"
+)
 
 var (
 	version   = "dev"
@@ -31,16 +34,15 @@ var (
 	buildDate = "unknown"
 )
 
-func versionFun(cmd *cobra.Command, args []string) {
+func versionFun() {
 	fmt.Printf("Version: %s\n", version)
 	fmt.Printf("Git hash: %s\n", gitCommit)
 	fmt.Printf("Git branch: %s\n", gitBranch)
 	fmt.Printf("Build date: %s\n", buildDate)
 	fmt.Printf("Go Version: %s\n", goVersion)
-	os.Exit(0)
 }
 
-func completeFun(cmd *cobra.Command, cmdArgs []string) {
+func completeFun(store *configstore.Store, cmdArgs []string) {
 	args := completion.PrepareCmdArgs(cmdArgs)
 	if args == nil {
 		os.Exit(FallbackExitCode)
@@ -53,37 +55,34 @@ func completeFun(cmd *cobra.Command, cmdArgs []string) {
 	}
 	args = args[1:]
 
-	fetchConfigCli := fetcher.GetFetchConfigCli()
+	fetchConfigCli := fetcher.NewFetcherCli(store)
 	f := fetcher.NewFetcher(&fetchConfigCli)
 	err := f.LoadFetcherState()
 	if err != nil {
-		logrus.Warnf("Error loading fetcher state")
+		log.Warnf("Error loading fetcher state")
 		os.Exit(FallbackExitCode)
 	}
 
 	completionResults, err := completion.ProcessCommandArgs(firstWord, args, f)
 	if e, ok := err.(resources.UnknownResourceError); ok {
-		logrus.Warnf("Unknown resource type: %s", e)
+		log.Warnf("Unknown resource type: %s", e)
 		os.Exit(FallbackExitCode)
 	} else if e, ok := err.(parse.UnmanagedFlagError); ok {
-		logrus.Warnf("Unmanaged flag: %s", e)
+		log.Warnf("Unmanaged flag: %s", e)
 		os.Exit(FallbackExitCode)
 	} else if err != nil {
-		logrus.Warnf("Error during completion: %s", err)
+		log.Warnf("Error during completion: %s", err)
 		os.Exit(FallbackExitCode)
 	}
 
 	err = f.SaveFetcherState()
 	if err != nil {
-		logrus.Warnf("Error saving fetcher state: %s", err)
+		log.Warnf("Error saving fetcher state: %s", err)
 		os.Exit(FallbackExitCode)
 	}
 
-	if err != nil {
-		logrus.Fatalf("Completion error: %s", err)
-	}
 	if len(completionResults.Completions) == 0 {
-		logrus.Warn("No completion found")
+		log.Warn("No completion found")
 		os.Exit(5)
 	}
 	formattedComps := completionResults.GetFormattedOutput()
@@ -92,97 +91,121 @@ func completeFun(cmd *cobra.Command, cmdArgs []string) {
 	fzfResult, err := fzf.CallFzf(formattedComps, query)
 	if err != nil {
 		if e, ok := err.(fzf.InterruptedCommandError); ok {
-			logrus.Infof("Fzf was interrupted: %s", e)
+			log.Infof("Fzf was interrupted: %s", e)
 			os.Exit(FallbackExitCode)
 		}
-		logrus.Fatalf("Call fzf error: %s", err)
+		log.Fatalf("Call fzf error: %s", err)
 	}
 	res, err := results.ProcessResult(firstWord, args, f, fzfResult)
 	if err != nil {
-		logrus.Fatalf("Process result error: %s", err)
+		log.Fatalf("Process result error: %s", err)
 	}
 	fmt.Print(res)
 }
 
-func statsFun(cmd *cobra.Command, args []string) {
-	fetchConfigCli := fetcher.GetFetchConfigCli()
+func statsFun(cfg *configstore.Store) {
+	fetchConfigCli := fetcher.NewFetcherCli(cfg)
 	f := fetcher.NewFetcher(&fetchConfigCli)
 	ctx := context.Background()
 	stats, err := f.GetStats(ctx)
 	util.FatalIf(err)
-	statsOutput := store.GetStatsOutput(stats)
+	statsOutput := storepkg.GetStatsOutput(stats)
 	fmt.Print(statsOutput)
 }
 
-func addK8sCmd(rootCmd *cobra.Command) {
-	var k8sCmd = &cobra.Command{
-		Use:                "k8s_completion",
-		Run:                completeFun,
-		Short:              "Subcommand grouping completion for kubectl cli verbs",
-		Example:            "kubectl-fzf-completion k8s_completion get pods \"\"",
-		DisableFlagParsing: true,
-		FParseErrWhitelist: cobra.FParseErrWhitelist{
-			UnknownFlags: true,
-		},
-	}
-	rootCmd.AddCommand(k8sCmd)
-}
-
-func addStatsCmd(rootCmd *cobra.Command) {
-	statsCmd := &cobra.Command{
-		Use: "stats",
-		Run: statsFun,
-	}
-	statsFlags := statsCmd.Flags()
-	fetcher.SetFetchConfigFlags(statsFlags)
-	err := viper.BindPFlags(statsFlags)
-	util.FatalIf(err)
-	rootCmd.AddCommand(statsCmd)
-}
-
-func genFun(cmd *cobra.Command, args []string) {
+func genFun(cfg *configstore.Store) {
 	ctx := context.Background()
 	err := gencode.GenerateResourceCode(ctx)
 	util.FatalIf(err)
 }
 
-func addGenCommand(rootCmd *cobra.Command) {
-	genCmd := &cobra.Command{
-		Use: "generate",
-		Run: genFun,
+func runCompletionCommand(cfg *configstore.Store, args []string) {
+	util.CommonInitialization(cfg)
+	defer pprof.StopCPUProfile()
+	defer util.DoMemoryProfile(cfg)
+	completeFun(cfg, args)
+}
+
+func runStatsCommand(cfg *configstore.Store, args []string) {
+	statsFlags := flag.NewFlagSet("stats", flag.ContinueOnError)
+	statsFlags.SetOutput(os.Stdout)
+	fetcher.SetFetchConfigFlags(statsFlags)
+	if err := cfg.BindFlagSet(statsFlags); err != nil {
+		util.FatalIf(err)
 	}
-	fs := genCmd.PersistentFlags()
-	clusterconfig.SetClusterConfigCli(fs)
-	rootCmd.AddCommand(genCmd)
+	if err := statsFlags.Parse(args); err != nil {
+		if err == flag.ErrHelp {
+			return
+		}
+		util.FatalIf(err)
+	}
+	cfg.UpdateFromFlagSet(statsFlags)
+	util.CommonInitialization(cfg)
+	defer pprof.StopCPUProfile()
+	defer util.DoMemoryProfile(cfg)
+	statsFun(cfg)
+}
+
+func runGenerateCommand(cfg *configstore.Store, args []string) {
+	genFlags := flag.NewFlagSet("generate", flag.ContinueOnError)
+	genFlags.SetOutput(os.Stdout)
+	clusterconfig.SetClusterConfigCli(genFlags)
+	if err := cfg.BindFlagSet(genFlags); err != nil {
+		util.FatalIf(err)
+	}
+	if err := genFlags.Parse(args); err != nil {
+		if err == flag.ErrHelp {
+			return
+		}
+		util.FatalIf(err)
+	}
+	cfg.UpdateFromFlagSet(genFlags)
+	util.CommonInitialization(cfg)
+	defer pprof.StopCPUProfile()
+	defer util.DoMemoryProfile(cfg)
+	genFun(cfg)
 }
 
 func main() {
-	var rootCmd = &cobra.Command{
-		Use: "kubectl_fzf_completion",
-		CompletionOptions: cobra.CompletionOptions{
-			DisableDefaultCmd: true,
-		},
-	}
-	rootFlags := rootCmd.PersistentFlags()
+	cfg := configstore.NewStore()
+	homeDir, _ := os.UserHomeDir()
+	_ = cfg.LoadConfigFile([]string{"/etc/kubectl_fzf", homeDir}, configFileName)
+	cfg.ApplyEnv("KUBECTL_FZF")
+
+	rootFlags := flag.NewFlagSet("kubectl_fzf_completion", flag.ContinueOnError)
+	rootFlags.SetOutput(os.Stdout)
 	util.SetCommonCliFlags(rootFlags, "error")
-	err := viper.BindPFlags(rootFlags)
-	util.FatalIf(err)
-
-	versionCmd := &cobra.Command{
-		Use:   "version",
-		Run:   versionFun,
-		Short: "Print command version",
+	if err := cfg.BindFlagSet(rootFlags); err != nil {
+		util.FatalIf(err)
 	}
-	rootCmd.AddCommand(versionCmd)
+	if err := rootFlags.Parse(os.Args[1:]); err != nil {
+		if err == flag.ErrHelp {
+			return
+		}
+		util.FatalIf(err)
+	}
+	cfg.UpdateFromFlagSet(rootFlags)
 
-	addK8sCmd(rootCmd)
-	addStatsCmd(rootCmd)
-	addGenCommand(rootCmd)
+	args := rootFlags.Args()
+	if len(args) == 0 {
+		fmt.Fprintln(os.Stderr, "expected subcommand: k8s_completion, stats, generate, version")
+		os.Exit(1)
+	}
 
-	util.ConfigureViper()
-	cobra.OnInitialize(util.CommonInitialization)
-	defer pprof.StopCPUProfile()
-	if err := rootCmd.Execute(); err != nil {
-		logrus.Errorf("Root command failed: %v", err)
+	switch args[0] {
+	case "version":
+		util.CommonInitialization(cfg)
+		defer pprof.StopCPUProfile()
+		defer util.DoMemoryProfile(cfg)
+		versionFun()
+	case "k8s_completion":
+		runCompletionCommand(cfg, args[1:])
+	case "stats":
+		runStatsCommand(cfg, args[1:])
+	case "generate":
+		runGenerateCommand(cfg, args[1:])
+	default:
+		fmt.Fprintf(os.Stderr, "unknown subcommand %s\n", args[0])
+		os.Exit(1)
 	}
 }

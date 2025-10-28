@@ -16,8 +16,8 @@ DOCKER_BUILD_ARGS=--build-arg GIT_COMMIT="$(shell git rev-parse --short HEAD)" \
 				  --build-arg BUILD_DATE="$(shell date -Iseconds -u)" \
 				  --build-arg GO_VERSION="$(shell go version)"
 
-DOCKER_TAGS=-t bonnefoa/kubectl-fzf:latest \
-	-t bonnefoa/kubectl-fzf:$(shell git describe --tags)
+DOCKER_TAGS=-t codeactual/kubectl-fzf:latest \
+	-t codeactual/kubectl-fzf:$(shell git describe --tags)
 
 docker:
 	docker build . \
