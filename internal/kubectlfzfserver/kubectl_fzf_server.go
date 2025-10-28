@@ -15,6 +15,7 @@ import (
 	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/store"
 	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
 	"github.com/bonnefoa/kubectl-fzf/v3/internal/util"
+	configstore "github.com/bonnefoa/kubectl-fzf/v3/internal/util/config"
 	"github.com/pkg/errors"
 )
 
@@ -59,11 +60,11 @@ func handleSignals(cancel context.CancelFunc) {
 	}
 }
 
-func StartKubectlFzfServer() {
+func StartKubectlFzfServer(cfg *configstore.Store) {
 	ctx, cancel := context.WithCancel(context.Background())
 	go handleSignals(cancel)
 
-	storeConfigCli := store.GetStoreConfigCli()
+	storeConfigCli := store.NewStoreConfigCli(cfg)
 	storeConfig := store.NewStoreConfig(&storeConfigCli)
 	err := storeConfig.LoadClusterConfig()
 	if err != nil {
@@ -74,12 +75,12 @@ func StartKubectlFzfServer() {
 		log.Fatalf("error creating destination dir: %s", err)
 	}
 
-	resourceWatcherCli := resourcewatcher.GetResourceWatcherCli()
+	resourceWatcherCli := resourcewatcher.NewResourceWatcherCli(cfg)
 	watcher, stores, err := startWatchOnCluster(ctx, resourceWatcherCli, storeConfig)
 	util.FatalIf(err)
 	ticker := time.NewTicker(time.Second * 5)
 
-	httpServerConfCli := httpserver.GetHttpServerConfigCli()
+	httpServerConfCli := httpserver.NewHttpServerConfigCli(cfg)
 	_, err = httpserver.StartHttpServer(ctx, &httpServerConfCli, storeConfig, stores)
 	if err != nil {
 		log.Fatalf("Error starting http server: %s", err)

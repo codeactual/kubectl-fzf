@@ -1,0 +1,11 @@
+{
+  "ignore-node-role": ["compute"],
+  "exclude-namespaces": [
+    "consul-agent",
+    "datadog-agent",
+    "coredns",
+    "kube-system",
+    "kube2iam",
+    "dev-.*"
+  ]
+}

@@ -1,21 +1,22 @@
 package clusterconfig
 
 import (
-	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
+	"flag"
+
+	"github.com/bonnefoa/kubectl-fzf/v3/internal/util/config"
 )
 
 type ClusterConfigCli struct {
-	ClusterName string // Only for testing purpose
+	ClusterName string
 	CacheDir    string
 }
 
-func SetClusterConfigCli(fs *pflag.FlagSet) {
+func SetClusterConfigCli(fs *flag.FlagSet) {
 	fs.String("cache-dir", "/tmp/kubectl_fzf_cache/", "Cache dir location.")
 }
 
-func GetClusterConfigCli() *ClusterConfigCli {
-	c := ClusterConfigCli{}
-	c.CacheDir = viper.GetString("cache-dir")
-	return &c
+func NewClusterConfigCli(store *config.Store) *ClusterConfigCli {
+	return &ClusterConfigCli{
+		CacheDir: store.GetString("cache-dir", "/tmp/kubectl_fzf_cache/"),
+	}
 }
