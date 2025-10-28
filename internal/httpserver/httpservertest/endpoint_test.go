@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/fetcher/fetchertest"
-	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
+	"github.com/codeactual/kubectl-fzf/v4/internal/fetcher/fetchertest"
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
 )
 
 func TestMain(m *testing.M) {

@@ -8,7 +8,7 @@ setup(
     name='kubectl_fzf_cache_builder',
     description='fzf',
     version='0.1.0',
-    url='https://github.com/bonnefoa/kubectl-fzf',
+    url='https://github.com/codeactual/kubectl-fzf',
     packages=find_packages(),
     install_requires=[
         'kubernetes',

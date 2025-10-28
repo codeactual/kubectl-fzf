@@ -4,9 +4,9 @@ import (
 	"sort"
 	"time"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/util"
+	"github.com/codeactual/kubectl-fzf/v4/internal/util"
 
-	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )

@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/store"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/util"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/store"
+	"github.com/codeactual/kubectl-fzf/v4/internal/util"
 
-	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
 	"github.com/pkg/errors"
 )
 

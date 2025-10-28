@@ -6,11 +6,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/fetcher"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/resources"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/parse"
+	"github.com/codeactual/kubectl-fzf/v4/internal/fetcher"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/resources"
+	"github.com/codeactual/kubectl-fzf/v4/internal/parse"
 
-	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
 	"github.com/pkg/errors"
 )
 

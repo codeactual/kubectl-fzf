@@ -10,11 +10,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/fetcher/fetchertest"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/httpserver/httpservertest"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/resources"
-	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/parse"
+	"github.com/codeactual/kubectl-fzf/v4/internal/fetcher/fetchertest"
+	"github.com/codeactual/kubectl-fzf/v4/internal/httpserver/httpservertest"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/resources"
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
+	"github.com/codeactual/kubectl-fzf/v4/internal/parse"
 )
 
 func TestMain(m *testing.M) {

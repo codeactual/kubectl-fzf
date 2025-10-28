@@ -3,9 +3,9 @@ package resources
 import (
 	"fmt"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/util"
+	"github.com/codeactual/kubectl-fzf/v4/internal/util"
 
-	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
 	batchv1 "k8s.io/api/batch/v1"
 )
 

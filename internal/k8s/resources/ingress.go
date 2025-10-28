@@ -1,7 +1,7 @@
 package resources
 
 import (
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/util"
+	"github.com/codeactual/kubectl-fzf/v4/internal/util"
 
 	v1 "k8s.io/api/networking/v1"
 )

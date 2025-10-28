@@ -3,7 +3,7 @@ package resources
 import (
 	"fmt"
 
-	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
 )
 
 type UnknownResourceError struct {
