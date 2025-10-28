@@ -3,7 +3,7 @@ package completion
 import (
 	"fmt"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/util"
+	"github.com/codeactual/kubectl-fzf/v4/internal/util"
 )
 
 type CompletionResult struct {

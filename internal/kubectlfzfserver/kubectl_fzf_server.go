@@ -10,12 +10,12 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/httpserver"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/resourcewatcher"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/store"
-	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/util"
-	configstore "github.com/bonnefoa/kubectl-fzf/v3/internal/util/config"
+	"github.com/codeactual/kubectl-fzf/v4/internal/httpserver"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/resourcewatcher"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/store"
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
+	"github.com/codeactual/kubectl-fzf/v4/internal/util"
+	configstore "github.com/codeactual/kubectl-fzf/v4/internal/util/config"
 	"github.com/pkg/errors"
 )
 

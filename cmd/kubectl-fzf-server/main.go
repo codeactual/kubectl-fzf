@@ -6,12 +6,12 @@ import (
 	"os"
 	"runtime/pprof"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/httpserver"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/resourcewatcher"
-	storepkg "github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/store"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/kubectlfzfserver"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/util"
-	configstore "github.com/bonnefoa/kubectl-fzf/v3/internal/util/config"
+	"github.com/codeactual/kubectl-fzf/v4/internal/httpserver"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/resourcewatcher"
+	storepkg "github.com/codeactual/kubectl-fzf/v4/internal/k8s/store"
+	"github.com/codeactual/kubectl-fzf/v4/internal/kubectlfzfserver"
+	"github.com/codeactual/kubectl-fzf/v4/internal/util"
+	configstore "github.com/codeactual/kubectl-fzf/v4/internal/util/config"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 )

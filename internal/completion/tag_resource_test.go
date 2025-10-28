@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/fetcher/fetchertest"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/resources"
+	"github.com/codeactual/kubectl-fzf/v4/internal/fetcher/fetchertest"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/resources"
 )
 
 func TestTagLabel(t *testing.T) {

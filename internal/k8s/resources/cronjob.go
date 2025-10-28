@@ -3,8 +3,8 @@ package resources
 import (
 	"strings"
 
-	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/util"
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
+	"github.com/codeactual/kubectl-fzf/v4/internal/util"
 	v1 "k8s.io/api/batch/v1"
 )
 

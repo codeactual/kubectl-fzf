@@ -6,7 +6,7 @@ import (
 	"runtime/debug"
 	"time"
 
-	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
 	"github.com/pkg/errors"
 )
 

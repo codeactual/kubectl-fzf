@@ -45,9 +45,9 @@ Table of Contents
 
 ```shell
 # Completion binary called during autocompletion
-go install github.com/bonnefoa/kubectl-fzf/v3/cmd/kubectl-fzf-completion@main
+go install github.com/codeactual/kubectl-fzf/v4/cmd/kubectl-fzf-completion@main
 # If you want to run the kubectl-fzf server locally
-go install github.com/bonnefoa/kubectl-fzf/v3/cmd/kubectl-fzf-server@main
+go install github.com/codeactual/kubectl-fzf/v4/cmd/kubectl-fzf-server@main
 ```
 
 `kubectl-fzf-completion` needs to be in you $PATH so make sure that your $GOPATH bin is included:
@@ -60,12 +60,12 @@ PATH=$PATH:$GOPATH/bin
 Source the autocompletion functions:
 ```
 # bash version
-wget https://raw.githubusercontent.com/bonnefoa/kubectl-fzf/main/shell/kubectl_fzf.bash -O ~/.kubectl_fzf.bash
+wget https://raw.githubusercontent.com/codeactual/kubectl-fzf/main/shell/kubectl_fzf.bash -O ~/.kubectl_fzf.bash
 echo "source <(kubectl completion bash)" >> ~/.bashrc
 echo "source ~/.kubectl_fzf.bash" >> ~/.bashrc
 
 # zsh version
-wget https://raw.githubusercontent.com/bonnefoa/kubectl-fzf/main/shell/kubectl_fzf.plugin.zsh -O ~/.kubectl_fzf.plugin.zsh
+wget https://raw.githubusercontent.com/codeactual/kubectl-fzf/main/shell/kubectl_fzf.plugin.zsh -O ~/.kubectl_fzf.plugin.zsh
 echo "source <(kubectl completion zsh)" >> ~/.zshrc
 echo "source ~/.kubectl_fzf.plugin.zsh" >> ~/.zshrc
 ```
@@ -75,7 +75,7 @@ echo "source ~/.kubectl_fzf.plugin.zsh" >> ~/.zshrc
 You can use [antigen](https://github.com/zsh-users/antigen) to load it as a zsh plugin
 ```shell
 antigen bundle robbyrussell/oh-my-zsh plugins/docker
-antigen bundle bonnefoa/kubectl-fzf@main shell/
+antigen bundle codeactual/kubectl-fzf@main shell/
 ```
 
 ## kubectl-fzf-server
@@ -89,7 +89,7 @@ You can install `kubectl-fzf-server` as a systemd unit server.
 ```
 # Create user systemd config
 mkdir -p ~/.config/systemd/user
-wget https://raw.githubusercontent.com/bonnefoa/kubectl-fzf/main/systemd/kubectl_fzf_server.service -O ~/.config/systemd/user/kubectl_fzf_server.service
+wget https://raw.githubusercontent.com/codeactual/kubectl-fzf/main/systemd/kubectl_fzf_server.service -O ~/.config/systemd/user/kubectl_fzf_server.service
 # Set fullpath of kubectl-fzf-server
 sed -i "s#INSTALL_PATH#$GOPATH/bin#" ~/.config/systemd/user/kubectl_fzf_server.service
 
@@ -197,7 +197,7 @@ export KUBECTL_FZF_COMP_DEBUG_FILE=/tmp/debug
 Check that the completion function is correctly sourced:
 ```
 type kubectl_fzf_completion
-kubectl_fzf_completion is a shell function from /home/bonnefoa/.antigen/bundles/kubectl-fzf-main/shell/kubectl_fzf.plugin.zsh
+kubectl_fzf_completion is a shell function from /home/codeactual/.antigen/bundles/kubectl-fzf-main/shell/kubectl_fzf.plugin.zsh
 ```
 
 Use zsh completion debug:

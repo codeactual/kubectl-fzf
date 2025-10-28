@@ -5,7 +5,7 @@ import (
 	"os"
 	"runtime/pprof"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/util/config"
+	"github.com/codeactual/kubectl-fzf/v4/internal/util/config"
 )
 
 func SetCommonCliFlags(fs *flag.FlagSet, defaultLogLevel string) {

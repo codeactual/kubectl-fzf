@@ -6,10 +6,10 @@ import (
 	"path"
 	"time"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/resources"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/util"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/resources"
+	"github.com/codeactual/kubectl-fzf/v4/internal/util"
 
-	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
 )
 
 type FetcherState struct {

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
 )
 
 func FormatCompletion(lines []string) string {

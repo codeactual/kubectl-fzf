@@ -1,6 +1,6 @@
 [Unit]
 Description=kubectl-fzf server
-Documentation=https://github.com/bonnefoa/kubectl-fzf
+Documentation=https://github.com/codeactual/kubectl-fzf
 After=network-online.target
 Wants=network-online.target
 

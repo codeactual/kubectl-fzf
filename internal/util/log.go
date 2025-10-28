@@ -1,8 +1,8 @@
 package util
 
 import (
-	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/util/config"
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
+	"github.com/codeactual/kubectl-fzf/v4/internal/util/config"
 )
 
 type LogConf struct {

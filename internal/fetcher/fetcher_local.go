@@ -4,8 +4,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/resources"
-	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/resources"
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
 )
 
 func (f *Fetcher) checkLocalFiles(r resources.ResourceType) (map[string]resources.K8sResource, error) {

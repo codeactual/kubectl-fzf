@@ -6,9 +6,9 @@ import (
 	"path"
 	"testing"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/resources"
-	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/util"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/resources"
+	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
+	"github.com/codeactual/kubectl-fzf/v4/internal/util"
 )
 
 func TestMain(m *testing.M) {

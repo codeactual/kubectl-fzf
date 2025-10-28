@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/httpserver"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/clusterconfig"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/store"
-	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/store/storetest"
+	"github.com/codeactual/kubectl-fzf/v4/internal/httpserver"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/clusterconfig"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/store"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/store/storetest"
 )
 
 func GetTestClusterConfigCli() *clusterconfig.ClusterConfigCli {
