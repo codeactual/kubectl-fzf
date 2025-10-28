@@ -2,25 +2,23 @@ package util
 
 import (
 	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
-	"github.com/spf13/viper"
+	"github.com/bonnefoa/kubectl-fzf/v3/internal/util/config"
 )
 
 type LogConf struct {
 	LogLevel log.Level
 }
 
-func getLogConf() LogConf {
-	logLevelStr := viper.GetString("log-level")
+func getLogConf(store *config.Store) LogConf {
+	logLevelStr := store.GetString("log-level", "info")
 	logLevel, err := log.ParseLevel(logLevelStr)
 	FatalIf(err)
 
-	l := LogConf{}
-	l.LogLevel = logLevel
-	return l
+	return LogConf{LogLevel: logLevel}
 }
 
-func configureLog() {
-	logConf := getLogConf()
+func configureLog(store *config.Store) {
+	logConf := getLogConf(store)
 	log.Debugf("Setting log level %v", logConf.LogLevel)
 	log.SetLevel(logConf.LogLevel)
 }

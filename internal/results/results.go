@@ -10,7 +10,6 @@ import (
 	"github.com/bonnefoa/kubectl-fzf/v3/internal/parse"
 	"github.com/bonnefoa/kubectl-fzf/v3/internal/util"
 	"github.com/pkg/errors"
-	"github.com/spf13/pflag"
 )
 
 // ProcessResult handles fzf output and provides completion to use
@@ -27,12 +26,33 @@ func ProcessResult(cmdUse string, cmdArgs []string,
 }
 
 func parseNamespaceFlag(cmdArgs []string) (*string, error) {
-	fs := pflag.NewFlagSet("f1", pflag.ContinueOnError)
-	fs.ParseErrorsWhitelist.UnknownFlags = true
-	cmdNamespace := fs.StringP("namespace", "n", "", "")
 	log.Debugf("Parsing namespace from %v", cmdArgs)
-	err := fs.Parse(cmdArgs)
-	return cmdNamespace, err
+	var namespace *string
+	for i := 0; i < len(cmdArgs); i++ {
+		arg := cmdArgs[i]
+		if arg == "--" {
+			break
+		}
+		switch {
+		case arg == "-n" || arg == "--namespace":
+			if i+1 >= len(cmdArgs) {
+				return nil, fmt.Errorf("flag needs an argument: %s", arg)
+			}
+			value := cmdArgs[i+1]
+			namespace = &value
+			i++
+		case strings.HasPrefix(arg, "-n="):
+			value := strings.TrimPrefix(arg, "-n=")
+			namespace = &value
+		case strings.HasPrefix(arg, "--namespace="):
+			value := strings.TrimPrefix(arg, "--namespace=")
+			namespace = &value
+		case strings.HasPrefix(arg, "-n") && len(arg) > 2:
+			value := arg[2:]
+			namespace = &value
+		}
+	}
+	return namespace, nil
 }
 
 func processResultWithNamespace(cmdUse string, cmdArgs []string, fzfResult string, currentNamespace string) (string, error) {
