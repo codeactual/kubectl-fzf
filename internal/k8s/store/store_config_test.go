@@ -6,7 +6,6 @@ import (
 
 	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/clusterconfig"
 	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/resources"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestFileStoreExists(t *testing.T) {
@@ -16,6 +15,10 @@ func TestFileStoreExists(t *testing.T) {
 			CacheDir:    "./testdata",
 		}, TimeBetweenFullDump: 1 * time.Second}
 	s := NewStoreConfig(c)
-	assert.True(t, s.FileStoreExists(resources.ResourceTypePod))
-	assert.False(t, s.FileStoreExists(resources.ResourceTypeApiResource))
+	if !s.FileStoreExists(resources.ResourceTypePod) {
+		t.Errorf("expected pod file store to exist")
+	}
+	if s.FileStoreExists(resources.ResourceTypeApiResource) {
+		t.Errorf("expected api resource file store to not exist")
+	}
 }

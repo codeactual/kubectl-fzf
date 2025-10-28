@@ -4,23 +4,28 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestEncoding(t *testing.T) {
 	data := "test"
 
 	f, err := ioutil.TempFile("", "encoding")
-	require.NoError(t, err)
+	if err != nil {
+		t.Fatalf("TempFile() error = %v", err)
+	}
 	defer os.Remove(f.Name())
 
 	err = EncodeToFile(data, f.Name())
-	require.NoError(t, err)
+	if err != nil {
+		t.Fatalf("EncodeToFile() error = %v", err)
+	}
 
 	var res string
 	err = LoadGobFromFile(&res, f.Name())
-	require.NoError(t, err)
-	assert.Equal(t, "test", res)
+	if err != nil {
+		t.Fatalf("LoadGobFromFile() error = %v", err)
+	}
+	if res != "test" {
+		t.Fatalf("expected \"test\", got %q", res)
+	}
 }

@@ -1,11 +1,6 @@
 package resources
 
-import (
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-)
+import "testing"
 
 func TestParseResourceType(t *testing.T) {
 	testDatas := []struct {
@@ -21,7 +16,9 @@ func TestParseResourceType(t *testing.T) {
 
 	for _, v := range testDatas {
 		r := ParseResourceType(v.resourceName)
-		require.Equal(t, v.resourceType, r, "Expected %s, got %s", v.resourceType, r)
+		if v.resourceType != r {
+			t.Errorf("ParseResourceType(%q) = %v, want %v", v.resourceName, r, v.resourceType)
+		}
 	}
 }
 
@@ -36,7 +33,9 @@ func TestGetResourceType(t *testing.T) {
 	}
 	for _, testData := range testDatas {
 		parsedType := GetResourceType("get", testData.args)
-		assert.Equal(t, testData.resourceType, parsedType, "Args: %s, type %s, result: %s", testData.args, testData.resourceType, parsedType)
+		if parsedType != testData.resourceType {
+			t.Errorf("GetResourceType(%q) = %v, want %v", testData.args, parsedType, testData.resourceType)
+		}
 	}
 }
 
@@ -47,7 +46,9 @@ func TestGetResourceSetFromSliceWithErrors(t *testing.T) {
 	}
 	for _, testData := range testDatas {
 		_, err := GetResourceSetFromSlice(testData)
-		require.Error(t, err)
+		if err == nil {
+			t.Errorf("GetResourceSetFromSlice(%q) expected error, got nil", testData)
+		}
 	}
 }
 
@@ -58,6 +59,8 @@ func TestGetResourceSetFromSlice(t *testing.T) {
 	}
 	for _, testData := range testDatas {
 		_, err := GetResourceSetFromSlice(testData)
-		require.NoError(t, err)
+		if err != nil {
+			t.Errorf("GetResourceSetFromSlice(%q) unexpected error: %v", testData, err)
+		}
 	}
 }
