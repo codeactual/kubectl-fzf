@@ -6,8 +6,8 @@ import (
 	"runtime/debug"
 	"time"
 
+	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 )
 
 type stackTracer interface {
@@ -20,7 +20,7 @@ func IsAddressReachable(address string) bool {
 	}
 	conn, err := net.DialTimeout("tcp", address, time.Second)
 	if err != nil {
-		logrus.Infof("Couldn't connect to %s: %s", address, err)
+		log.Infof("Couldn't connect to %s: %s", address, err)
 		return false
 	}
 	conn.Close()
@@ -31,11 +31,11 @@ func IsAddressReachable(address string) bool {
 func FatalIf(err error) {
 	if err != nil {
 		if stackErr, ok := err.(stackTracer); ok {
-			logrus.WithField("stacktrace", fmt.Sprintf("%+v", stackErr.StackTrace()))
+			log.Errorf("stacktrace: %+v", stackErr.StackTrace())
 		} else {
 			debug.PrintStack()
 		}
-		logrus.Fatalf("Fatal error: %s\n", err)
+		log.Fatalf("Fatal error: %s", err)
 	}
 }
 

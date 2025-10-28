@@ -2,6 +2,7 @@ package fetcher
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/clusterconfig"
@@ -12,23 +13,19 @@ import (
 // Fetcher defines configuration to fetch completion datas
 type Fetcher struct {
 	clusterconfig.ClusterConfig
-	fetcherCachePath     string
-	httpEndpoint         string
-	fzfNamespace         string
-	minimumCache         time.Duration
-	portForwardLocalPort int // Local port to use for port-forward
-	fetcherState         FetcherState
+	fetcherCachePath string
+	httpEndpoint     string
+	minimumCache     time.Duration
+	fetcherState     FetcherState
 }
 
 func NewFetcher(fetchConfigCli *FetcherCli) *Fetcher {
 	f := Fetcher{
-		ClusterConfig:        clusterconfig.NewClusterConfig(fetchConfigCli.ClusterConfigCli),
-		httpEndpoint:         fetchConfigCli.HttpEndpoint,
-		fzfNamespace:         fetchConfigCli.FzfNamespace,
-		fetcherCachePath:     fetchConfigCli.FetcherCachePath,
-		minimumCache:         fetchConfigCli.MinimumCache,
-		portForwardLocalPort: fetchConfigCli.PortForwardLocalPort,
-		fetcherState:         *newFetcherState(fetchConfigCli.FetcherCachePath),
+		ClusterConfig:    clusterconfig.NewClusterConfig(fetchConfigCli.ClusterConfigCli),
+		httpEndpoint:     fetchConfigCli.HttpEndpoint,
+		fetcherCachePath: fetchConfigCli.FetcherCachePath,
+		minimumCache:     fetchConfigCli.MinimumCache,
+		fetcherState:     *newFetcherState(fetchConfigCli.FetcherCachePath),
 	}
 	return &f
 }
@@ -67,5 +64,8 @@ func (f *Fetcher) GetResources(ctx context.Context, r resources.ResourceType) (m
 	if util.IsAddressReachable(f.httpEndpoint) {
 		return f.loadResourceFromHttpServer(f.httpEndpoint, r)
 	}
-	return f.getResourcesFromPortForward(ctx, r)
+	if f.httpEndpoint == "" {
+		return nil, fmt.Errorf("http endpoint not configured; run kubectl-fzf-server locally or provide --http-endpoint")
+	}
+	return nil, fmt.Errorf("http endpoint %s is not reachable", f.httpEndpoint)
 }

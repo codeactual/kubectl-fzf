@@ -10,15 +10,15 @@ import (
 	"github.com/bonnefoa/kubectl-fzf/v3/internal/fetcher/fetchertest"
 	"github.com/bonnefoa/kubectl-fzf/v3/internal/httpserver/httpservertest"
 	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/resources"
+	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
 	"github.com/bonnefoa/kubectl-fzf/v3/internal/parse"
-	"github.com/sirupsen/logrus"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestMain(m *testing.M) {
-	logrus.SetLevel(logrus.DebugLevel)
+	log.SetLevel(log.DebugLevel)
 	code := m.Run()
 	os.Exit(code)
 }

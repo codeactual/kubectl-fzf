@@ -6,7 +6,7 @@ import (
 
 	"github.com/bonnefoa/kubectl-fzf/v3/internal/util"
 
-	"github.com/sirupsen/logrus"
+	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
@@ -60,7 +60,7 @@ func (r *ResourceMeta) FromDynamicMeta(u *unstructured.Unstructured, config Ctor
 	r.Labels, found, err = unstructured.NestedStringMap(u.Object, "metadata", "labels")
 	util.FatalIf(err)
 	if !found {
-		logrus.Debugf("metadata.labels was not found in %#v", u.Object)
+		log.Debugf("metadata.labels was not found in %#v", u.Object)
 	}
 	r.CreationTime, err = time.Parse(time.RFC3339, metadata["creationTimestamp"].(string))
 	util.FatalIf(err)

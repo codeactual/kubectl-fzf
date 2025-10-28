@@ -10,8 +10,8 @@ import (
 	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/resources"
 	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/store"
 
+	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 )
 
 type FzfHttpServer struct {
@@ -37,7 +37,7 @@ func (f *FzfHttpServer) readinessRoute(c *gin.Context) {
 
 func (f *FzfHttpServer) statsRoute(c *gin.Context) {
 	stats := store.GetStatsFromStores(f.stores)
-	logrus.Debugf("Sending stats: %v", stats)
+	log.Debugf("Sending stats: %v", stats)
 	c.JSON(http.StatusOK, stats)
 }
 
@@ -54,7 +54,7 @@ func (f *FzfHttpServer) resourcesRoute(c *gin.Context, resourceType resources.Re
 		return
 	}
 	filePath := f.storeConfig.GetResourceStorePath(resourceType)
-	logrus.Debugf("Serving file %s", filePath)
+	log.Debugf("Serving file %s", filePath)
 	c.File(filePath)
 }
 
@@ -80,18 +80,18 @@ func (f *FzfHttpServer) setupRouter() *gin.Engine {
 
 func startHttpServer(ctx context.Context, listener net.Listener, srv *http.Server) {
 	go func() {
-		logrus.Infof("Starting http server on %s", srv.Addr)
+		log.Infof("Starting http server on %s", srv.Addr)
 		if err := srv.Serve(listener); err != nil && err != http.ErrServerClosed {
-			logrus.Fatalf("error listening: %s", err)
+			log.Fatalf("error listening: %s", err)
 		}
 	}()
 	<-ctx.Done()
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
-		logrus.Fatalf("Server forced to shutdown: %s", err)
+		log.Fatalf("Server forced to shutdown: %s", err)
 	}
-	logrus.Info("Exiting http server")
+	log.Info("Exiting http server")
 }
 
 func StartHttpServer(ctx context.Context, h *HttpServerConfigCli, storeConfig *store.StoreConfig, stores []*store.Store) (*FzfHttpServer, error) {

@@ -9,8 +9,8 @@ import (
 	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/resourcewatcher"
 	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/store"
 	"github.com/bonnefoa/kubectl-fzf/v3/internal/kubectlfzfserver"
+	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
 	"github.com/bonnefoa/kubectl-fzf/v3/internal/util"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -63,6 +63,6 @@ func main() {
 	defer pprof.StopCPUProfile()
 	defer util.DoMemoryProfile()
 	if err := rootCmd.Execute(); err != nil {
-		logrus.Fatalf("Root command failed: %v", err)
+		log.Fatalf("Root command failed: %v", err)
 	}
 }

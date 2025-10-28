@@ -1,21 +1,17 @@
 package util
 
 import (
-	"fmt"
-	"path"
-	"runtime"
-
-	"github.com/sirupsen/logrus"
+	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
 	"github.com/spf13/viper"
 )
 
 type LogConf struct {
-	LogLevel logrus.Level
+	LogLevel log.Level
 }
 
 func getLogConf() LogConf {
 	logLevelStr := viper.GetString("log-level")
-	logLevel, err := logrus.ParseLevel(logLevelStr)
+	logLevel, err := log.ParseLevel(logLevelStr)
 	FatalIf(err)
 
 	l := LogConf{}
@@ -25,13 +21,6 @@ func getLogConf() LogConf {
 
 func configureLog() {
 	logConf := getLogConf()
-	logrus.Debugf("Setting log level %v", logConf.LogLevel)
-	logrus.SetLevel(logConf.LogLevel)
-	logrus.SetReportCaller(true)
-	logrus.SetFormatter(&logrus.TextFormatter{
-		CallerPrettyfier: func(f *runtime.Frame) (string, string) {
-			return f.Function + "()", fmt.Sprintf("%s:%d", path.Base(f.File), f.Line)
-		},
-		FullTimestamp: true,
-	})
+	log.Debugf("Setting log level %v", logConf.LogLevel)
+	log.SetLevel(logConf.LogLevel)
 }

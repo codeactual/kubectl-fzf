@@ -5,7 +5,7 @@ import (
 	"runtime"
 	"runtime/pprof"
 
-	"github.com/sirupsen/logrus"
+	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
 	"github.com/spf13/viper"
 )
 
@@ -14,12 +14,12 @@ func DoMemoryProfile() {
 	if memProfile != "" {
 		f, err := os.Create(memProfile)
 		if err != nil {
-			logrus.Fatal("could not create memory profile: ", err)
+			log.Fatal("could not create memory profile: ", err)
 		}
 		defer f.Close()
 		runtime.GC()
 		if err := pprof.WriteHeapProfile(f); err != nil {
-			logrus.Fatal("could not write memory profile: ", err)
+			log.Fatal("could not write memory profile: ", err)
 		}
 	}
 }

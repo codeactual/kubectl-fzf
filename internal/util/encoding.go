@@ -8,12 +8,12 @@ import (
 	"io/ioutil"
 	"os"
 
+	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 )
 
 func EncodeToFile(data interface{}, filePath string) error {
-	logrus.Debugf("Writing encoded data in %s", filePath)
+	log.Debugf("Writing encoded data in %s", filePath)
 
 	var gobBuf bytes.Buffer
 	enc := gob.NewEncoder(&gobBuf)
@@ -37,7 +37,7 @@ func EncodeToFile(data interface{}, filePath string) error {
 }
 
 func LoadGobFromFile(e interface{}, filePath string) error {
-	logrus.Debugf("Loading file %s", filePath)
+	log.Debugf("Loading file %s", filePath)
 	b, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		return errors.Wrap(err, "error reading file")

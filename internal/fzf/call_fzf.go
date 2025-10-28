@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/sirupsen/logrus"
+	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
 )
 
 type InterruptedCommandError string
@@ -24,11 +24,11 @@ func setCompsInStdin(cmd *exec.Cmd, comps string) error {
 	go func() {
 		_, err = io.Copy(stdin, strings.NewReader(comps))
 		if err != nil {
-			logrus.Error(err, "error copy stdin")
+			log.Error(err, "error copy stdin")
 		}
 		err = stdin.Close()
 		if err != nil {
-			logrus.Error(err, "error closing stdin")
+			log.Error(err, "error closing stdin")
 		}
 	}()
 	return nil
@@ -39,13 +39,13 @@ func CallFzf(comps string, query string) (string, error) {
 	header := strings.Split(comps, "\n")[1]
 	// Leave an additional line for overflow
 	numFields := len(strings.Fields(header)) + 1
-	logrus.Debugf("header: %s, numFields: %d", header, numFields)
+	log.Debugf("header: %s, numFields: %d", header, numFields)
 	previewWindow := fmt.Sprintf("--preview-window=down:%d", numFields)
 	previewCmd := fmt.Sprintf("echo -e \"%s\n{}\" | sed -e \"s/'//g\" | awk '(NR==1){for (i=1; i<=NF; i++) a[i]=$i} (NR==2){for (i in a) {printf a[i] \": \" $i \"\\n\"} }' | column -t | fold -w $COLUMNS", header)
 
 	// TODO Make fzf options configurable
 	fzfArgs := []string{"-1", "--header-lines=2", "--layout", "reverse", "-e", "--no-hscroll", "--no-sort", "--cycle", "-q", query, previewWindow, "--preview", previewCmd}
-	logrus.Infof("fzf args: %+v", fzfArgs)
+	log.Infof("fzf args: %+v", fzfArgs)
 	cmd := exec.Command("fzf", fzfArgs...)
 	cmd.Stdout = &result
 	cmd.Stderr = os.Stderr
@@ -55,10 +55,10 @@ func CallFzf(comps string, query string) (string, error) {
 		return "", err
 	}
 
-	logrus.Info("Start fzf command")
+	log.Info("Start fzf command")
 	err = cmd.Start()
 	if err != nil {
-		logrus.Fatalf("Error when running fzf: %s", err)
+		log.Fatalf("Error when running fzf: %s", err)
 	}
 
 	err = cmd.Wait()
@@ -70,6 +70,6 @@ func CallFzf(comps string, query string) (string, error) {
 		return "", err
 	}
 	res := strings.TrimSpace(result.String())
-	logrus.Infof("Fzf result: %s", res)
+	log.Infof("Fzf result: %s", res)
 	return res, nil
 }

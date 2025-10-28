@@ -10,7 +10,7 @@ import (
 	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/resources"
 	"github.com/bonnefoa/kubectl-fzf/v3/internal/util"
 
-	"github.com/sirupsen/logrus"
+	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -52,7 +52,7 @@ func NewStore(ctx context.Context, storeConfig *StoreConfig,
 
 func (k *Store) fullDumpTicker() {
 	timeBetweenFullDump := k.storeConfig.GetTimeBetweenFullDump()
-	logrus.Debugf("Starting ticker loop for %s: will do full dump every %s", k.resourceType, timeBetweenFullDump)
+	log.Debugf("Starting ticker loop for %s: will do full dump every %s", k.resourceType, timeBetweenFullDump)
 	t := time.NewTicker(timeBetweenFullDump)
 	for {
 		<-t.C
@@ -74,7 +74,7 @@ func resourceKey(obj interface{}) string {
 		name = metadata["name"].(string)
 		namespace = metadata["namespace"].(string)
 	default:
-		logrus.Warningf("Unknown type %v", obj)
+		log.Warnf("Unknown type %v", obj)
 	}
 	return fmt.Sprintf("%s_%s", namespace, name)
 }
@@ -96,7 +96,7 @@ func (k *Store) AddResourceList(lstRuntime []runtime.Object) {
 func (k *Store) AddResource(obj interface{}) {
 	key := resourceKey(obj)
 	newObj := k.resourceCtor(obj, k.ctorConfig)
-	logrus.Tracef("%s added: %s", k.resourceType, key)
+	log.Tracef("%s added: %s", k.resourceType, key)
 	k.dataMutex.Lock()
 	k.data[key] = newObj
 	k.dataMutex.Unlock()
@@ -113,10 +113,10 @@ func (k *Store) DeleteResource(obj interface{}) {
 	case metav1.ObjectMetaAccessor:
 		key = resourceKey(obj)
 	default:
-		logrus.Debugf("Unknown object type %v", obj)
+		log.Debugf("Unknown object type %v", obj)
 		return
 	}
-	logrus.Tracef("%s deleted: %s", k.resourceType, key)
+	log.Tracef("%s deleted: %s", k.resourceType, key)
 	k.dataMutex.Lock()
 	delete(k.data, key)
 	k.dataMutex.Unlock()
@@ -129,7 +129,7 @@ func (k *Store) UpdateResource(oldObj, newObj interface{}) {
 	k8sObj := k.resourceCtor(newObj, k.ctorConfig)
 	k.dataMutex.Lock()
 	if k8sObj.HasChanged(k.data[key]) {
-		logrus.Tracef("%s changed: %s", k.resourceType, key)
+		log.Tracef("%s changed: %s", k.resourceType, key)
 		k.data[key] = k8sObj
 		k.dataMutex.Unlock()
 		k.dumpRequired = true
@@ -159,18 +159,18 @@ func (k *Store) GetStats() *Stats {
 // DumpFullState writes the full state to the cache file
 func (k *Store) DumpFullState() error {
 	if !k.dumpRequired {
-		logrus.Tracef("No change of %s detected, skipping dump", k.resourceType)
+		log.Tracef("No change of %s detected, skipping dump", k.resourceType)
 		return nil
 	}
 	now := time.Now()
 	delta := now.Sub(k.lastFullDump)
 	if delta < k.storeConfig.GetTimeBetweenFullDump() {
-		logrus.Infof("Last full dump for %s happened %s ago, ignoring it", k.resourceType, delta)
+		log.Infof("Last full dump for %s happened %s ago, ignoring it", k.resourceType, delta)
 		return nil
 	}
 	k.dumpRequired = false
 	k.lastFullDump = now
-	logrus.Infof("Doing full dump of %d %s", len(k.data), k.resourceType)
+	log.Infof("Doing full dump of %d %s", len(k.data), k.resourceType)
 	destFile := k.storeConfig.GetResourceStorePath(k.resourceType)
 	k.dataMutex.Lock()
 	err := util.EncodeToFile(k.data, destFile)
