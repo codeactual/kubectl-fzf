@@ -52,7 +52,7 @@ func (c *ClusterConfig) CreateDestDir() error {
 		return errors.New("clustername is empty, call LoadClusterConfig before")
 	}
 	log.Infof("Creating destination dir '%s'", c.destDir)
-	err := os.MkdirAll(c.destDir, os.ModePerm)
+	err := os.MkdirAll(c.destDir, 0o700)
 	return err
 }
 

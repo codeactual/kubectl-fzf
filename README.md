@@ -16,7 +16,7 @@ Table of Contents
    * [Shell autocompletion](#shell-autocompletion)
       * [Zsh plugins: Antigen](#zsh-plugins-antigen)
    * [kubectl-fzf-server](#kubectl-fzf-server)
-      * [Install kubectl-fzf-server as a systemd service](#install-kubectl-fzf-server-as-a-systemd-service)
+      * [Minimal RBAC](#minimal-rbac)
 * [Usage](#usage)
    * [kubectl-fzf-server: local version](#kubectl-fzf-server-local-version)
    * [Completion](#completion)
@@ -57,17 +57,19 @@ PATH=$PATH:$GOPATH/bin
 
 ## Shell autocompletion
 
-Source the autocompletion functions:
+Source the autocompletion functions from the checked-out repository (or
+unpacked release archive):
 ```
 # bash version
-wget https://raw.githubusercontent.com/codeactual/kubectl-fzf/main/shell/kubectl_fzf.bash -O ~/.kubectl_fzf.bash
+mkdir -p ~/.config/kubectl-fzf
+install -m0644 shell/kubectl_fzf.bash ~/.config/kubectl-fzf/kubectl_fzf.bash
 echo "source <(kubectl completion bash)" >> ~/.bashrc
-echo "source ~/.kubectl_fzf.bash" >> ~/.bashrc
+echo "source ~/.config/kubectl-fzf/kubectl_fzf.bash" >> ~/.bashrc
 
 # zsh version
-wget https://raw.githubusercontent.com/codeactual/kubectl-fzf/main/shell/kubectl_fzf.plugin.zsh -O ~/.kubectl_fzf.plugin.zsh
+install -m0644 shell/kubectl_fzf.plugin.zsh ~/.config/kubectl-fzf/kubectl_fzf.plugin.zsh
 echo "source <(kubectl completion zsh)" >> ~/.zshrc
-echo "source ~/.kubectl_fzf.plugin.zsh" >> ~/.zshrc
+echo "source ~/.config/kubectl-fzf/kubectl_fzf.plugin.zsh" >> ~/.zshrc
 ```
 
 ### Zsh plugins: Antigen
@@ -82,29 +84,17 @@ antigen bundle codeactual/kubectl-fzf@main shell/
 
 `kubectl-fzf-server` now targets standalone deployments only. Running it inside a Kubernetes pod is no longer supported.
 
-### Install kubectl-fzf-server as a systemd service
+### Minimal RBAC
 
-You can install `kubectl-fzf-server` as a systemd unit server.
+Apply the [read-only RBAC manifest](docs/rbac-readonly.yaml) to grant kubectl-fzf
+the cluster permissions it needs without exposing Secret contents:
 
+```shell
+kubectl apply -f docs/rbac-readonly.yaml
 ```
-# Create user systemd config
-mkdir -p ~/.config/systemd/user
-wget https://raw.githubusercontent.com/codeactual/kubectl-fzf/main/systemd/kubectl_fzf_server.service -O ~/.config/systemd/user/kubectl_fzf_server.service
-# Set fullpath of kubectl-fzf-server
-sed -i "s#INSTALL_PATH#$GOPATH/bin#" ~/.config/systemd/user/kubectl_fzf_server.service
 
-# Reload to pick up new service
-systemctl --user daemon-reload
-
-# Start the server
-systemctl --user start kubectl_fzf_server.service
-
-# Automatically enable it at startup
-systemctl --user enable kubectl_fzf_server.service
-
-# Get log
-journalctl --user-unit=kubectl_fzf_server.service
-```
+The server only stores Secret metadata (namespace, name, type, and key counts),
+never the values themselves.
 
 # Usage
 
@@ -118,7 +108,7 @@ flowchart TB
 
     subgraph Laptop
         shell[Shell]
-        fileNode([/tmp/kubectl_fzf_cache/TargetCluster/pods])
+        fileNode([$XDG_CACHE_HOME/kubectl-fzf/TargetCluster/pods])
         comp[kubectl-fzf-completion]
         server[kubectl-fzf-server]
     end
@@ -129,7 +119,8 @@ flowchart TB
 ```
 
 `kubectl-fzf-server` will watch cluster resources and keep the current state of the cluster in local files.
-By default, files are written in `/tmp/kubectl_fzf_cache` (defined by `KUBECTL_FZF_CACHE`)
+By default, files are written in `$XDG_CACHE_HOME/kubectl-fzf` (or `$HOME/.cache/kubectl-fzf` when `XDG_CACHE_HOME` is unset).
+Set `KUBECTL_FZF_CACHE_DIR` to override the cache root.
 
 Advantages:
 - Minimal setup needed.

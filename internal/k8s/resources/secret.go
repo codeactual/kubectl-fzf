@@ -3,7 +3,6 @@ package resources
 import (
 	"strconv"
 
-	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
 	"github.com/codeactual/kubectl-fzf/v4/internal/util"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -11,8 +10,8 @@ import (
 // Secret is the summary of a kubernetes secret
 type Secret struct {
 	ResourceMeta
-	SecretType string
-	Data       string
+	SecretType   string
+	DataKeyCount string
 }
 
 // NewSecretFromRuntime builds a secret from informer result
@@ -25,10 +24,9 @@ func NewSecretFromRuntime(obj interface{}, config CtorConfig) K8sResource {
 // FromRuntime builds object from the informer's result
 func (s *Secret) FromRuntime(obj interface{}, config CtorConfig) {
 	secret := obj.(*corev1.Secret)
-	log.Tracef("Reading meta %#v", secret)
 	s.FromObjectMeta(secret.ObjectMeta, config)
 	s.SecretType = string(secret.Type)
-	s.Data = strconv.Itoa(len(secret.Data))
+	s.DataKeyCount = strconv.Itoa(len(secret.Data))
 }
 
 // HasChanged returns true if the resource's dump needs to be updated
@@ -42,7 +40,7 @@ func (s *Secret) ToStrings() []string {
 		s.Namespace,
 		s.Name,
 		s.SecretType,
-		s.Data,
+		s.DataKeyCount,
 		s.resourceAge(),
 		s.labelsString(),
 	}

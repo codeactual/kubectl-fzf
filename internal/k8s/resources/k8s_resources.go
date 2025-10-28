@@ -102,7 +102,7 @@ func ResourceToHeader(r ResourceType) string {
 	podHeader := "Namespace\tName\tPodIp\tHostIp\tNodeName\tPhase\tQOSClass\tContainers\tTolerations\tClaims\tAge\tLabels"
 	persistentVolumeHeader := "Name\tStatus\tStorageClass\tZone\tClaim\tVolume\tAffinities\tAge\tLabels"
 	persistentVolumeClaimHeader := "Namespace\tName\tStatus\tCapacity\tVolumeName\tStorageClass\tAge\tLabels"
-	secretHeader := "Namespace\tName\tType\tData\tAge\tLabels"
+	secretHeader := "Namespace\tName\tType\tKeys\tAge\tLabels"
 	serviceHeader := "Namespace\tName\tType\tClusterIp\tPorts\tSelector\tAge\tLabels"
 	serviceAccountHeader := "Namespace\tName\tSecrets\tAge\tLabels"
 	statefulSetHeader := "Namespace\tName\tReplicas\tSelector\tAge\tLabels"

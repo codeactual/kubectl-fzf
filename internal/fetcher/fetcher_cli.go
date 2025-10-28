@@ -2,9 +2,11 @@ package fetcher
 
 import (
 	"flag"
+	"path/filepath"
 	"time"
 
 	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/clusterconfig"
+	"github.com/codeactual/kubectl-fzf/v4/internal/util"
 	"github.com/codeactual/kubectl-fzf/v4/internal/util/config"
 )
 
@@ -18,14 +20,14 @@ type FetcherCli struct {
 func SetFetchConfigFlags(fs *flag.FlagSet) {
 	clusterconfig.SetClusterConfigCli(fs)
 	fs.String("http-endpoint", "", "Force completion to fetch data from a specific http endpoint.")
-	fs.String("fetcher-cache-path", "/tmp/kubectl_fzf_cache/fetcher_cache", "Location of cached resources fetched from a remote kubectl-fzf instance.")
+	fs.String("fetcher-cache-path", filepath.Join(util.DefaultCacheRoot(), "fetcher_cache"), "Location of cached resources fetched from a remote kubectl-fzf instance.")
 	fs.Duration("minimum-cache", 5*time.Second, "The minimum duration after which the http endpoint will be queried to check for resource modification.")
 }
 
 func NewFetcherCli(store *config.Store) FetcherCli {
 	return FetcherCli{
 		ClusterConfigCli: clusterconfig.NewClusterConfigCli(store),
-		FetcherCachePath: store.GetString("fetcher-cache-path", "/tmp/kubectl_fzf_cache/fetcher_cache"),
+		FetcherCachePath: store.GetString("fetcher-cache-path", filepath.Join(util.DefaultCacheRoot(), "fetcher_cache")),
 		HttpEndpoint:     store.GetString("http-endpoint", ""),
 		MinimumCache:     store.GetDuration("minimum-cache", 5*time.Second),
 	}
