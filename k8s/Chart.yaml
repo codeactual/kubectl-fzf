@@ -1,4 +1,0 @@
-apiVersion: v2
-name: kubectl-fzf
-description: Chart for kubectl-fzf cache builder
-version: 0.1.0

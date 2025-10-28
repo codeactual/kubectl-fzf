@@ -13,10 +13,10 @@ import (
 	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/clusterconfig"
 	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/resources"
 	"github.com/bonnefoa/kubectl-fzf/v3/internal/k8s/store"
+	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
 	"github.com/bonnefoa/kubectl-fzf/v3/internal/parse"
 	"github.com/bonnefoa/kubectl-fzf/v3/internal/results"
 	"github.com/bonnefoa/kubectl-fzf/v3/internal/util"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -57,33 +57,33 @@ func completeFun(cmd *cobra.Command, cmdArgs []string) {
 	f := fetcher.NewFetcher(&fetchConfigCli)
 	err := f.LoadFetcherState()
 	if err != nil {
-		logrus.Warnf("Error loading fetcher state")
+		log.Warnf("Error loading fetcher state")
 		os.Exit(FallbackExitCode)
 	}
 
 	completionResults, err := completion.ProcessCommandArgs(firstWord, args, f)
 	if e, ok := err.(resources.UnknownResourceError); ok {
-		logrus.Warnf("Unknown resource type: %s", e)
+		log.Warnf("Unknown resource type: %s", e)
 		os.Exit(FallbackExitCode)
 	} else if e, ok := err.(parse.UnmanagedFlagError); ok {
-		logrus.Warnf("Unmanaged flag: %s", e)
+		log.Warnf("Unmanaged flag: %s", e)
 		os.Exit(FallbackExitCode)
 	} else if err != nil {
-		logrus.Warnf("Error during completion: %s", err)
+		log.Warnf("Error during completion: %s", err)
 		os.Exit(FallbackExitCode)
 	}
 
 	err = f.SaveFetcherState()
 	if err != nil {
-		logrus.Warnf("Error saving fetcher state: %s", err)
+		log.Warnf("Error saving fetcher state: %s", err)
 		os.Exit(FallbackExitCode)
 	}
 
 	if err != nil {
-		logrus.Fatalf("Completion error: %s", err)
+		log.Fatalf("Completion error: %s", err)
 	}
 	if len(completionResults.Completions) == 0 {
-		logrus.Warn("No completion found")
+		log.Warn("No completion found")
 		os.Exit(5)
 	}
 	formattedComps := completionResults.GetFormattedOutput()
@@ -92,14 +92,14 @@ func completeFun(cmd *cobra.Command, cmdArgs []string) {
 	fzfResult, err := fzf.CallFzf(formattedComps, query)
 	if err != nil {
 		if e, ok := err.(fzf.InterruptedCommandError); ok {
-			logrus.Infof("Fzf was interrupted: %s", e)
+			log.Infof("Fzf was interrupted: %s", e)
 			os.Exit(FallbackExitCode)
 		}
-		logrus.Fatalf("Call fzf error: %s", err)
+		log.Fatalf("Call fzf error: %s", err)
 	}
 	res, err := results.ProcessResult(firstWord, args, f, fzfResult)
 	if err != nil {
-		logrus.Fatalf("Process result error: %s", err)
+		log.Fatalf("Process result error: %s", err)
 	}
 	fmt.Print(res)
 }
@@ -183,6 +183,6 @@ func main() {
 	cobra.OnInitialize(util.CommonInitialization)
 	defer pprof.StopCPUProfile()
 	if err := rootCmd.Execute(); err != nil {
-		logrus.Errorf("Root command failed: %v", err)
+		log.Errorf("Root command failed: %v", err)
 	}
 }

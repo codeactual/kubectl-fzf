@@ -3,12 +3,12 @@ package util
 import (
 	"os"
 
-	"github.com/sirupsen/logrus"
+	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
 )
 
 func RemoveTempDir(tempDir string) {
 	err := os.RemoveAll(tempDir)
-	logrus.Warnf("Couldn't remove tempdir %s: %s", tempDir, err)
+	log.Warnf("Couldn't remove tempdir %s: %s", tempDir, err)
 }
 
 func FileExists(filePath string) bool {

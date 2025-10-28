@@ -6,7 +6,7 @@ import (
 	"runtime/pprof"
 	"strings"
 
-	"github.com/sirupsen/logrus"
+	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
@@ -23,7 +23,7 @@ func CommonInitialization() {
 	if cpuProfile != "" {
 		f, err := os.Create(cpuProfile)
 		if err != nil {
-			logrus.Fatal(err)
+			log.Fatal(err)
 		}
 		pprof.StartCPUProfile(f)
 	}

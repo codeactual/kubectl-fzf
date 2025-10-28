@@ -5,11 +5,11 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/sirupsen/logrus"
+	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
 )
 
 func FormatCompletion(lines []string) string {
-	logrus.Info("formating completion")
+	log.Info("formating completion")
 	b := new(strings.Builder)
 	w := tabwriter.NewWriter(b, 0, 0, 1, ' ', tabwriter.StripEscape)
 	for _, line := range lines {
