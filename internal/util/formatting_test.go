@@ -1,10 +1,6 @@
 package util
 
-import (
-	"testing"
-
-	"github.com/stretchr/testify/require"
-)
+import "testing"
 
 func TestFormatCompletion(t *testing.T) {
 	res := FormatCompletion([]string{"header1\thead2", "comp1\tc1", "c2\tc22"})
@@ -12,5 +8,7 @@ func TestFormatCompletion(t *testing.T) {
 comp1   c1
 c2      c22
 `
-	require.Equal(t, expected, res)
+	if res != expected {
+		t.Errorf("FormatCompletion() = %q, want %q", res, expected)
+	}
 }

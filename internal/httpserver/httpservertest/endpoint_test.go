@@ -7,8 +7,6 @@ import (
 
 	"github.com/bonnefoa/kubectl-fzf/v3/internal/fetcher/fetchertest"
 	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestMain(m *testing.M) {
@@ -22,6 +20,10 @@ func TestHttpServerApiCompletion(t *testing.T) {
 	f, _ := fetchertest.GetTestFetcher(t, "nothing", fzfHttpServer.Port)
 	ctx := context.Background()
 	s, err := f.GetStats(ctx)
-	require.NoError(t, err)
-	assert.Len(t, s, 1)
+	if err != nil {
+		t.Fatalf("GetStats() error = %v", err)
+	}
+	if len(s) != 1 {
+		t.Fatalf("expected 1 stat, got %d", len(s))
+	}
 }

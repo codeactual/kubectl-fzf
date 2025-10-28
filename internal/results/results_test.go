@@ -5,8 +5,6 @@ import (
 	"testing"
 
 	log "github.com/bonnefoa/kubectl-fzf/v3/internal/logger"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestMain(m *testing.M) {
@@ -17,16 +15,28 @@ func TestMain(m *testing.M) {
 
 func TestParseNamespaceFlag(t *testing.T) {
 	r, err := parseNamespaceFlag([]string{"get", "pods", "-ntest"})
-	require.NoError(t, err)
-	assert.Equal(t, "test", *r)
+	if err != nil {
+		t.Fatalf("parseNamespaceFlag() error = %v", err)
+	}
+	if r == nil || *r != "test" {
+		t.Fatalf("parseNamespaceFlag() = %v, want %q", r, "test")
+	}
 
 	r, err = parseNamespaceFlag([]string{"get", "pods", "--namespace", "kube-system"})
-	require.NoError(t, err)
-	assert.Equal(t, "kube-system", *r)
+	if err != nil {
+		t.Fatalf("parseNamespaceFlag() error = %v", err)
+	}
+	if r == nil || *r != "kube-system" {
+		t.Fatalf("parseNamespaceFlag() = %v, want %q", r, "kube-system")
+	}
 
 	r, err = parseNamespaceFlag([]string{"get", "pods", "--context", "minikube", "--namespace", "kube-system"})
-	require.NoError(t, err)
-	assert.Equal(t, "kube-system", *r)
+	if err != nil {
+		t.Fatalf("parseNamespaceFlag() error = %v", err)
+	}
+	if r == nil || *r != "kube-system" {
+		t.Fatalf("parseNamespaceFlag() = %v, want %q", r, "kube-system")
+	}
 }
 
 func TestResult(t *testing.T) {
@@ -61,9 +71,11 @@ func TestResult(t *testing.T) {
 	}
 	for _, testData := range testDatas {
 		res, err := processResultWithNamespace(testData.cmdUse, testData.cmdArgs, testData.fzfResult, testData.currentNamespace)
-		require.NoError(t, err)
-		require.Equal(t, testData.expectedResult, res,
-			"Fzf result %s, cmdUse %s, cmdArgs %s, current namespace %s, res: %s", testData.fzfResult, testData.cmdUse,
-			testData.cmdArgs, testData.currentNamespace, res)
+		if err != nil {
+			t.Fatalf("processResultWithNamespace() error = %v", err)
+		}
+		if res != testData.expectedResult {
+			t.Fatalf("processResultWithNamespace() = %q, want %q (fzf=%q, use=%q, args=%v, ns=%q)", res, testData.expectedResult, testData.fzfResult, testData.cmdUse, testData.cmdArgs, testData.currentNamespace)
+		}
 	}
 }
