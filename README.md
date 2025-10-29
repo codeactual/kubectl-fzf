@@ -115,7 +115,7 @@ flowchart TB
     shell -- kubectl get pods TAB --> comp -- Read content and feed it to fzf --> fileNode
     server -- Write autocompletion informations --> fileNode
 
-    k8s <-- Watch --o server
+    k8s <-- Watch --> server
 ```
 
 `kubectl-fzf-server` will watch cluster resources and keep the current state of the cluster in local files.
