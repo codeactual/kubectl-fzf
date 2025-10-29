@@ -1,6 +1,10 @@
-# Kubectl-fzf
+# kubectl-fzf
 
-kubectl-fzf provides a fast and powerful fzf autocompletion for kubectl.
+kubectl-fzf provides a fast and powerful `fzf` autocompletion for `kubectl`.
+
+Core differences from https://github.com/bonnefoa/kubectl-fzf:
+- Reduced dependencies.
+- Focus on local development use case.
 
 [![asciicast](https://asciinema.org/a/yHKY5vQ40ZaOwMQnhLfYJ5Pja.png)](https://asciinema.org/a/yHKY5vQ40ZaOwMQnhLfYJ5Pja?t=01)
 
@@ -14,11 +18,7 @@ Table of Contents
 * [Installation](#installation)
    * [kubectl-fzf binaries](#kubectl-fzf-binaries)
    * [Shell autocompletion](#shell-autocompletion)
-      * [Zsh plugins: Antigen](#zsh-plugins-antigen)
-   * [kubectl-fzf-server](#kubectl-fzf-server)
-      * [Minimal RBAC](#minimal-rbac)
 * [Usage](#usage)
-   * [kubectl-fzf-server: local version](#kubectl-fzf-server-local-version)
    * [Completion](#completion)
       * [Configuration](#configuration)
 * [Troubleshooting](#troubleshooting)
@@ -35,7 +35,7 @@ Table of Contents
 
 # Requirements
 
-- go (minimum version 1.19)
+- go (minimum version 1.25)
 - awk
 - [fzf](https://github.com/junegunn/fzf)
 
@@ -44,10 +44,13 @@ Table of Contents
 ## kubectl-fzf binaries
 
 ```shell
-# Completion binary called during autocompletion
+# Completion binary called during autocompletion.
 go install github.com/codeactual/kubectl-fzf/v4/cmd/kubectl-fzf-completion@main
-# If you want to run the kubectl-fzf server locally
+kubectl-fzf-completion -h
+
+# Server which updates the cache files consumed by kubectl-fzf-completion to provide search results.
 go install github.com/codeactual/kubectl-fzf/v4/cmd/kubectl-fzf-server@main
+kubectl-fzf-server -h
 ```
 
 `kubectl-fzf-completion` needs to be in you $PATH so make sure that your $GOPATH bin is included:
@@ -57,11 +60,15 @@ PATH=$PATH:$GOPATH/bin
 
 ## Shell autocompletion
 
-Source the autocompletion functions from the checked-out repository (or
-unpacked release archive):
+Source the autocompletion functions from the checked-out repository (or unpacked release archive)/
+
+> [!NOTE]
+> Sourcing the native kubectl completion scripts are optional in order to provide fallback results.
+
 ```
-# bash version
 mkdir -p ~/.config/kubectl-fzf
+
+# bash version
 install -m0644 shell/kubectl_fzf.bash ~/.config/kubectl-fzf/kubectl_fzf.bash
 echo "source <(kubectl completion bash)" >> ~/.bashrc
 echo "source ~/.config/kubectl-fzf/kubectl_fzf.bash" >> ~/.bashrc
@@ -72,33 +79,9 @@ echo "source <(kubectl completion zsh)" >> ~/.zshrc
 echo "source ~/.config/kubectl-fzf/kubectl_fzf.plugin.zsh" >> ~/.zshrc
 ```
 
-### Zsh plugins: Antigen
-
-You can use [antigen](https://github.com/zsh-users/antigen) to load it as a zsh plugin
-```shell
-antigen bundle robbyrussell/oh-my-zsh plugins/docker
-antigen bundle codeactual/kubectl-fzf@main shell/
-```
-
-## kubectl-fzf-server
-
-`kubectl-fzf-server` now targets standalone deployments only. Running it inside a Kubernetes pod is no longer supported.
-
-### Minimal RBAC
-
-Apply the [read-only RBAC manifest](docs/rbac-readonly.yaml) to grant kubectl-fzf
-the cluster permissions it needs without exposing Secret contents:
-
-```shell
-kubectl apply -f docs/rbac-readonly.yaml
-```
-
-The server only stores Secret metadata (namespace, name, type, and key counts),
-never the values themselves.
+The server only stores Secret metadata (namespace, name, type, and key counts), never the values themselves.
 
 # Usage
-
-## kubectl-fzf-server: local version
 
 ```mermaid
 flowchart TB
@@ -144,7 +127,7 @@ The initial resource listing can be long on big clusters and autocompletion migh
 
 ## Completion
 
-Once `kubectl-fzf-server` is running, you will be able to use `kubectl_fzf` by calling the kubectl completion
+Once `kubectl-fzf-server` is running, you will be able to use use fzf-powered completion when using `kubectl` normally.
 ```shell
 # Get fzf completion on pods on all namespaces
 kubectl get pod <TAB>
