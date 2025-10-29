@@ -61,7 +61,10 @@ func (f *FetcherState) writeToDisk() error {
 		log.Errorf("Error while marshalling json; %s", err)
 		return err
 	}
-	return os.WriteFile(f.statePath, b, 0644)
+	if err := os.MkdirAll(path.Dir(f.statePath), 0o700); err != nil {
+		return err
+	}
+	return os.WriteFile(f.statePath, b, 0o600)
 }
 
 func (f *FetcherState) getLastModifiedTime(context string, r resources.ResourceType) *time.Time {

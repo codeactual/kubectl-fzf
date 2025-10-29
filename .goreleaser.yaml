@@ -8,8 +8,11 @@ builds:
   binary: kubectl-fzf-server
   env:
     - CGO_ENABLED=0
+  go_version: 1.25
+  flags:
+    - -trimpath
   ldflags:
-    - -X 'main.goVersion={{.Env.GO_VERSION}}' -X main.gitCommit={{.Commit}} -X main.gitBranch={{.Tag}} -X main.buildDate={{.Date}} -X main.version={{.Version}}
+    - -X 'main.goVersion=1.25.0' -X main.gitCommit={{.Commit}} -X main.gitBranch={{.Tag}} -X main.buildDate={{.Date}} -X main.version={{.Version}}
   goos:
     - darwin
     - linux
@@ -21,8 +24,11 @@ builds:
   binary: kubectl-fzf-completion
   env:
     - CGO_ENABLED=0
+  go_version: 1.25
+  flags:
+    - -trimpath
   ldflags:
-    - -X 'main.goVersion={{.Env.GO_VERSION}}' -X main.gitCommit={{.Commit}} -X main.gitBranch={{.Tag}} -X main.buildDate={{.Date}} -X main.version={{.Version}}
+    - -X 'main.goVersion=1.25.0' -X main.gitCommit={{.Commit}} -X main.gitBranch={{.Tag}} -X main.buildDate={{.Date}} -X main.version={{.Version}}
   goos:
     - darwin
     - linux

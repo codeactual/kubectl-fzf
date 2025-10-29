@@ -25,6 +25,17 @@ func ProcessResult(cmdUse string, cmdArgs []string,
 	return processResultWithNamespace(cmdUse, cmdArgs, fzfResult, namespace)
 }
 
+func completingAfterDoubleDash(cmdArgs []string) bool {
+	doubleDashIndex := -1
+	for i, arg := range cmdArgs {
+		if arg == "--" {
+			doubleDashIndex = i
+			break
+		}
+	}
+	return doubleDashIndex >= 0 && doubleDashIndex < len(cmdArgs)-1
+}
+
 func parseNamespaceFlag(cmdArgs []string) (*string, error) {
 	log.Debugf("Parsing namespace from %v", cmdArgs)
 	var namespace *string
@@ -97,13 +108,25 @@ func processResultWithNamespace(cmdUse string, cmdArgs []string, fzfResult strin
 		if err != nil {
 			return "", errors.Wrapf(err, "Error parsing commands %s", cmdArgs)
 		}
-		log.Debugf("Namespace parsed: %s", *cmdNamespace)
+		if cmdNamespace != nil {
+			log.Debugf("Namespace parsed: %s", *cmdNamespace)
+		} else {
+			log.Debugf("Namespace parsed: <none>")
+		}
 	}
-	lastWord := cmdArgs[len(cmdArgs)-1]
-	// add flag to the completion
-	lastFlags := []string{"-l=", "-l", "--field-selector=", "--selector=", "-n=", "--namespace=", "-n"}
-	if util.IsStringIn(lastWord, lastFlags) {
-		resultValue = fmt.Sprintf("%s%s", lastWord, resultValue)
+	afterDoubleDash := completingAfterDoubleDash(cmdArgs)
+
+	if len(cmdArgs) > 0 {
+		lastWord := cmdArgs[len(cmdArgs)-1]
+		// add flag to the completion
+		lastFlags := []string{"-l=", "-l", "--field-selector=", "--selector=", "-n=", "--namespace=", "-n"}
+		if util.IsStringIn(lastWord, lastFlags) {
+			resultValue = fmt.Sprintf("%s%s", lastWord, resultValue)
+		}
+	}
+
+	if afterDoubleDash {
+		return resultValue, nil
 	}
 
 	if cmdNamespace != nil && *cmdNamespace == resultNamespace {

@@ -68,6 +68,7 @@ func TestResult(t *testing.T) {
 		{"kube-system spec.nodeName=minikube", "get", []string{"pods", "--field-selector", " "}, "default", "spec.nodeName=minikube -n kube-system"},
 		{"kube-system coredns-64897985d-nrblm", "get", []string{"pods", "c"}, "default", "coredns-64897985d-nrblm -n kube-system"},
 		{"apiservices.apiregistration.k8s.io None apiregistration.k8s.io/v1", "get", []string{" "}, "default", "apiservices.apiregistration.k8s.io"},
+		{"kfzf kubectl-fzf-788969b7cb-vf85b", "exec", []string{"--", " "}, "default", "kubectl-fzf-788969b7cb-vf85b"},
 	}
 	for _, testData := range testDatas {
 		res, err := processResultWithNamespace(testData.cmdUse, testData.cmdArgs, testData.fzfResult, testData.currentNamespace)
@@ -76,6 +77,25 @@ func TestResult(t *testing.T) {
 		}
 		if res != testData.expectedResult {
 			t.Fatalf("processResultWithNamespace() = %q, want %q (fzf=%q, use=%q, args=%v, ns=%q)", res, testData.expectedResult, testData.fzfResult, testData.cmdUse, testData.cmdArgs, testData.currentNamespace)
+		}
+	}
+}
+
+func TestCompletingAfterDoubleDash(t *testing.T) {
+	tests := []struct {
+		name string
+		args []string
+		want bool
+	}{
+		{"no dash", []string{"pods", " "}, false},
+		{"just dash", []string{"--"}, false},
+		{"after dash", []string{"--", " "}, true},
+		{"multiple args", []string{"-ti", "--", " "}, true},
+	}
+
+	for _, tt := range tests {
+		if got := completingAfterDoubleDash(tt.args); got != tt.want {
+			t.Fatalf("%s: completingAfterDoubleDash(%v) = %v, want %v", tt.name, tt.args, got, tt.want)
 		}
 	}
 }

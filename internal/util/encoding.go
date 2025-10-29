@@ -22,7 +22,7 @@ func EncodeToFile(data interface{}, filePath string) error {
 		return errors.Wrap(err, "error encoding gob data")
 	}
 
-	writer, err := os.Create(filePath)
+	writer, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
 		return errors.Wrap(err, "error creating target file")
 	}

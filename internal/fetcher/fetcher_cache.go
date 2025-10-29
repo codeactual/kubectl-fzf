@@ -27,7 +27,7 @@ func getLastModifiedFromHeader(headers http.Header) (time.Time, error) {
 func (f *Fetcher) createCacheDir() (string, error) {
 	cacheDir := path.Join(f.fetcherCachePath, f.GetContext())
 	log.Infof("Creating cache dir %s", cacheDir)
-	err := os.MkdirAll(cacheDir, 0755)
+	err := os.MkdirAll(cacheDir, 0o700)
 	if err != nil {
 		return cacheDir, errors.Wrap(err, "error mkdirall")
 	}
@@ -41,7 +41,7 @@ func (f *Fetcher) writeResourceToCache(headers http.Header, b []byte, r resource
 	}
 	resourcePath := path.Join(cacheDir, r.String())
 	log.Debugf("Caching resource in %s", resourcePath)
-	err = os.WriteFile(resourcePath, b, 0644)
+	err = os.WriteFile(resourcePath, b, 0o600)
 	if err != nil {
 		return errors.Wrap(err, "error writing cache file")
 	}

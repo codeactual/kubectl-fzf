@@ -4,7 +4,23 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"unicode"
 )
+
+func sanitizeControlCharacters(s string) string {
+	if s == "" {
+		return s
+	}
+	var builder strings.Builder
+	builder.Grow(len(s))
+	for _, r := range s {
+		if unicode.IsControl(r) {
+			continue
+		}
+		builder.WriteRune(r)
+	}
+	return builder.String()
+}
 
 // IsStringExcluded returns true if one of the regexp match the input string
 func IsStringExcluded(s string, regexps []*regexp.Regexp) bool {
@@ -32,9 +48,12 @@ func IsStringIncluded(s string, regexps []*regexp.Regexp) bool {
 // DumpLine replaces empty string by None, join the slice and append newline
 func DumpLine(lst []string) string {
 	for k, v := range lst {
-		if v == "" {
+		sanitized := sanitizeControlCharacters(v)
+		if sanitized == "" {
 			lst[k] = "None"
+			continue
 		}
+		lst[k] = sanitized
 	}
 	line := strings.Join(lst, "\t")
 	return line
