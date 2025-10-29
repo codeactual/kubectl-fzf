@@ -100,7 +100,7 @@ never the values themselves.
 
 ## kubectl-fzf-server: local version
 
-``` mermaid
+```mermaid
 flowchart TB
     subgraph TargetCluster
         k8s[api-server]
