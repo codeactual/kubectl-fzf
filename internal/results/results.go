@@ -133,7 +133,7 @@ func processResultWithNamespace(cmdUse string, cmdArgs []string, fzfResult strin
 		return resultValue, nil
 	}
 
-	if resultNamespace != currentNamespace && flagCompletion != parse.FlagNamespace {
+	if resultNamespace != "" && resultNamespace != currentNamespace && flagCompletion != parse.FlagNamespace {
 		completion := fmt.Sprintf("%s -n %s", resultValue, resultNamespace)
 		return completion, nil
 	}

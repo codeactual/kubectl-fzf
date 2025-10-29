@@ -21,3 +21,8 @@ func NewClusterConfigCli(store *config.Store) *ClusterConfigCli {
 		CacheDir: store.GetString("cache-dir", util.DefaultCacheRoot()),
 	}
 }
+
+func GetClusterConfigCli() *ClusterConfigCli {
+	store := config.NewStore()
+	return NewClusterConfigCli(store)
+}

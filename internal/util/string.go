@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 )
 
 func sanitizeControlCharacters(s string) string {
@@ -13,11 +14,39 @@ func sanitizeControlCharacters(s string) string {
 	}
 	var builder strings.Builder
 	builder.Grow(len(s))
-	for _, r := range s {
+	for i := 0; i < len(s); {
+		r, size := utf8.DecodeRuneInString(s[i:])
+		if r == utf8.RuneError && size == 1 {
+			i += size
+			continue
+		}
+		if r == '\033' {
+			j := i + size
+			if j < len(s) && s[j] == '[' {
+				j++
+				for j < len(s) {
+					b := s[j]
+					if (b >= '0' && b <= '9') || b == ';' {
+						j++
+						continue
+					}
+					if b >= 0x40 && b <= 0x7E {
+						j++
+					}
+					break
+				}
+				i = j
+				continue
+			}
+			i += size
+			continue
+		}
 		if unicode.IsControl(r) {
+			i += size
 			continue
 		}
 		builder.WriteRune(r)
+		i += size
 	}
 	return builder.String()
 }

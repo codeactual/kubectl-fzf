@@ -121,12 +121,24 @@ func TestTickerPodDumpFullState(t *testing.T) {
 	if err != nil {
 		t.Fatalf("os.Stat() before error = %v", err)
 	}
-	time.Sleep(1000 * time.Millisecond)
+
+	// Wait less than TimeBetweenFullDump to confirm the ticker does not trigger.
+	time.Sleep(100 * time.Millisecond)
+	fileInfoShortWait, err := os.Stat(podFilePath)
+	if err != nil {
+		t.Fatalf("os.Stat() short wait error = %v", err)
+	}
+	if fileInfoShortWait.ModTime().After(fileInfoBefore.ModTime()) {
+		t.Fatalf("expected file modification time to remain unchanged before full dump interval")
+	}
+
+	// Wait long enough for the ticker to perform another full dump.
+	time.Sleep(600 * time.Millisecond)
 	fileInfoAfter, err := os.Stat(podFilePath)
 	if err != nil {
 		t.Fatalf("os.Stat() after error = %v", err)
 	}
-	if fileInfoBefore.ModTime().Before(fileInfoAfter.ModTime()) {
-		t.Fatalf("expected file modification time to be non-increasing")
+	if !fileInfoAfter.ModTime().After(fileInfoBefore.ModTime()) {
+		t.Fatalf("expected file modification time to increase after full dump interval")
 	}
 }
