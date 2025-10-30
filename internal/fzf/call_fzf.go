@@ -60,7 +60,6 @@ func CallFzf(comps string, query string) (string, error) {
 		"--header-lines=2",
 		"--layout",
 		"reverse",
-		"-e",
 		"--no-hscroll",
 		"--no-sort",
 		"--cycle",
