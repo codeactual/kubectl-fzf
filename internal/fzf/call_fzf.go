@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 
 	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
@@ -34,6 +35,16 @@ func setCompsInStdin(cmd *exec.Cmd, comps string) error {
 	return nil
 }
 
+func nameColumnIndex(header string) (int, bool) {
+	fields := strings.Fields(header)
+	for i, field := range fields {
+		if strings.EqualFold(field, "name") {
+			return i + 1, true
+		}
+	}
+	return 0, false
+}
+
 func CallFzf(comps string, query string) (string, error) {
 	var result strings.Builder
 	header := strings.Split(comps, "\n")[1]
@@ -44,7 +55,25 @@ func CallFzf(comps string, query string) (string, error) {
 	previewCmd := fmt.Sprintf("echo -e \"%s\n{}\" | sed -e \"s/'//g\" | awk '(NR==1){for (i=1; i<=NF; i++) a[i]=$i} (NR==2){for (i in a) {printf a[i] \": \" $i \"\\n\"} }' | column -t | fold -w $COLUMNS", header)
 
 	// TODO Make fzf options configurable
-	fzfArgs := []string{"-1", "--header-lines=2", "--layout", "reverse", "-e", "--no-hscroll", "--no-sort", "--cycle", "-q", query, previewWindow, "--preview", previewCmd}
+	fzfArgs := []string{
+		"-1",
+		"--header-lines=2",
+		"--layout",
+		"reverse",
+		"-e",
+		"--no-hscroll",
+		"--no-sort",
+		"--cycle",
+		"-q",
+		query,
+		previewWindow,
+		"--preview",
+		previewCmd,
+	}
+
+	if idx, ok := nameColumnIndex(header); ok {
+		fzfArgs = append(fzfArgs, "--delimiter", "\\s+", "--nth", strconv.Itoa(idx))
+	}
 	log.Infof("fzf args: %+v", fzfArgs)
 	cmd := exec.Command("fzf", fzfArgs...)
 	cmd.Stdout = &result
