@@ -5,8 +5,8 @@ go 1.25.0
 require (
 	github.com/pkg/errors v0.9.1
 	golang.org/x/net v0.46.0
-	k8s.io/api v0.34.1
-	k8s.io/apimachinery v0.34.1
+	k8s.io/api v0.34.2
+	k8s.io/apimachinery v0.34.2
 	k8s.io/client-go v0.34.1
 )
 
