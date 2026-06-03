@@ -3,6 +3,7 @@ module github.com/codeactual/kubectl-fzf/v4
 go 1.25.0
 
 require (
+	github.com/cenkalti/backoff/v5 v5.0.3
 	github.com/pkg/errors v0.9.1
 	golang.org/x/net v0.46.0
 	k8s.io/api v0.34.1
