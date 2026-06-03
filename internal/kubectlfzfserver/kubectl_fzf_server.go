@@ -11,12 +11,14 @@ import (
 	_ "net/http/pprof"
 
 	"github.com/codeactual/kubectl-fzf/v4/internal/httpserver"
+	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/apiready"
 	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/resourcewatcher"
 	"github.com/codeactual/kubectl-fzf/v4/internal/k8s/store"
 	log "github.com/codeactual/kubectl-fzf/v4/internal/logger"
 	"github.com/codeactual/kubectl-fzf/v4/internal/util"
 	configstore "github.com/codeactual/kubectl-fzf/v4/internal/util/config"
 	"github.com/pkg/errors"
+	authzv1 "k8s.io/api/authorization/v1"
 )
 
 func startWatchOnCluster(ctx context.Context,
@@ -73,6 +75,26 @@ func StartKubectlFzfServer(cfg *configstore.Store) {
 	err = storeConfig.CreateDestDir()
 	if err != nil {
 		log.Fatalf("error creating destination dir: %s", err)
+	}
+
+	// Ride out the boot-time RBAC-bootstrap race before any cluster reads: at
+	// system boot the apiserver rejects the kubernetes-admin identity with
+	// forbidden until its default cluster-admin binding reconciles, which made
+	// FetchNamespaces/DumpAPIResources FATAL when started too early. Probe one
+	// representative permission (list namespaces at cluster scope) and block up
+	// to 3 min; on an already-ready cluster this returns on the first
+	// round-trip with no perceptible delay.
+	clientset, err := storeConfig.GetClientset()
+	if err != nil {
+		log.Fatalf("error getting clientset: %s", err)
+	}
+	err = apiready.WaitAuthorized(ctx, clientset, authzv1.ResourceAttributes{
+		Verb:     "list",
+		Group:    "",
+		Resource: "namespaces",
+	}, 3*time.Minute)
+	if err != nil {
+		log.Fatalf("apiserver not ready: %s", err)
 	}
 
 	resourceWatcherCli := resourcewatcher.NewResourceWatcherCli(cfg)
