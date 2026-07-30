@@ -125,6 +125,16 @@ The initial resource listing can be long on big clusters and autocompletion migh
 
 `connect: connection refused` or similar messages are expected if there's network issues/interruptions and `kubectl-fzf-server` will automatically reconnect.
 
+At startup `kubectl-fzf-server` waits for the apiserver to authorize the current
+identity (probed with a `SelfSubjectAccessReview`) for **up to 3 minutes** before
+building the cache, emitting a `waiting for apiserver authorization` line while
+it waits. This rides out the boot-time RBAC-bootstrap race — when started during
+early system boot the apiserver returns `forbidden` until its default
+cluster-admin binding reconciles, which previously made startup fatally error.
+On an already-ready cluster the probe returns on the first round-trip, so there
+is no perceptible delay and no line; if the full 3 minutes elapse the server
+still exits with the fatal error.
+
 ## Completion
 
 Once `kubectl-fzf-server` is running, you will be able to use use fzf-powered completion when using `kubectl` normally.
